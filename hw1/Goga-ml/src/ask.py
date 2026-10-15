@@ -1,11 +1,12 @@
 """Ask Across Interviews: answer a founder's question from the interview transcripts, with citations.
 
 Usage (from the repo root):
-    python hw1/Goga-ml/src/ask.py "What do people currently pay?" [--min-score 0.6] [--k 5]
+    python hw1/Goga-ml/src/ask.py "What do people currently pay?" [--min-score 0.65] [--k 5]
 
 Prints the JSON from docs/INTERFACES.md section 8 to stdout, logs and cost to stderr.
 """
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -18,18 +19,19 @@ from retrieval import Chunk, load_chunks, rank
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 TRANSCRIPTS_DIR = REPO_ROOT / "data" / "transcripts"
+CACHE_FILE = Path(__file__).resolve().parent / ".embed_cache.json"  # git-ignored
 
 ABSTAIN = "no evidence found"
 CITATION_RE = re.compile(r"\[(interview_\d+):L(\d+)\]")
 
-CHAT_MODEL = os.environ.get("GROUNDWORK_CHAT_MODEL", "gemini-2.5-flash")
+CHAT_MODEL = os.environ.get("GROUNDWORK_CHAT_MODEL", "gemini-3.8-flash")
 EMBED_MODEL = os.environ.get("GROUNDWORK_EMBED_MODEL", "gemini-embedding-001")
 # USD per 1M tokens. Defaults match the napkin math in spec.md; override if the team picks other models.
-PRICE_CHAT_IN = float(os.environ.get("GROUNDWORK_CHAT_PRICE_IN", "0.30"))
-PRICE_CHAT_OUT = float(os.environ.get("GROUNDWORK_CHAT_PRICE_OUT", "2.50"))
+PRICE_CHAT_IN = float(os.environ.get("GROUNDWORK_CHAT_PRICE_IN", "0.75"))
+PRICE_CHAT_OUT = float(os.environ.get("GROUNDWORK_CHAT_PRICE_OUT", "3.75"))
 PRICE_EMBED_IN = float(os.environ.get("GROUNDWORK_EMBED_PRICE_IN", "0.15"))
 
-DEFAULT_MIN_SCORE = 0.6  # tuned on the golden questions, see golden.md
+DEFAULT_MIN_SCORE = 0.65  # tuned on live runs: related 0.70+, unrelated <= 0.634, see golden.md
 DEFAULT_K = 5
 EMBED_BATCH = 100  # texts per embedding request
 MAX_EMBED_CALLS = 10  # hard cap per run: refuse to embed more than 1,000 chunks
@@ -141,20 +143,33 @@ def make_gemini(usage: Usage):
         raise RuntimeError("GEMINI_API_KEY is not set")
     client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
+    # Transcripts rarely change, so embeddings are cached on disk and each question
+    # only embeds what is new. Without this, every run re-embeds all chunks and hits
+    # the free-tier limit of 100 embedding requests per minute after one question.
+    cache = json.loads(CACHE_FILE.read_text(encoding="utf-8")) if CACHE_FILE.exists() else {}
+
+    def cache_key(text: str, task_type: str) -> str:
+        return hashlib.sha256(f"{EMBED_MODEL}\n{task_type}\n{text}".encode("utf-8")).hexdigest()
+
     def embed(texts: list[str], task_type: str) -> np.ndarray:
-        if len(texts) > EMBED_BATCH * MAX_EMBED_CALLS:
-            raise RuntimeError(f"refusing to embed {len(texts)} texts (cap {EMBED_BATCH * MAX_EMBED_CALLS})")
-        vecs = []
-        for start in range(0, len(texts), EMBED_BATCH):
-            batch = texts[start:start + EMBED_BATCH]
+        keys = [cache_key(t, task_type) for t in texts]
+        missing = list({k: t for k, t in zip(keys, texts) if k not in cache}.items())
+        if len(missing) > EMBED_BATCH * MAX_EMBED_CALLS:
+            raise RuntimeError(f"refusing to embed {len(missing)} texts (cap {EMBED_BATCH * MAX_EMBED_CALLS})")
+        for start in range(0, len(missing), EMBED_BATCH):
+            batch = missing[start:start + EMBED_BATCH]
             resp = client.models.embed_content(
-                model=EMBED_MODEL, contents=batch,
+                model=EMBED_MODEL, contents=[t for _, t in batch],
                 config=types.EmbedContentConfig(task_type=task_type),
             )
-            vecs.extend(e.values for e in resp.embeddings)
+            for (k, _), e in zip(batch, resp.embeddings):
+                cache[k] = e.values
             # The embedding API returns no token count, so estimate ~4 characters per token.
-            usage.add(sum(len(t) for t in batch) // 4, 0, PRICE_EMBED_IN)
-        return np.array(vecs)
+            usage.add(sum(len(t) for _, t in batch) // 4, 0, PRICE_EMBED_IN)
+        if missing:
+            CACHE_FILE.write_text(json.dumps(cache), encoding="utf-8")
+            log(f"embedded {len(missing)} new texts, {len(texts) - len(missing)} from cache")
+        return np.array([cache[k] for k in keys])
 
     def generate(prompt: str) -> str:
         resp = client.models.generate_content(
