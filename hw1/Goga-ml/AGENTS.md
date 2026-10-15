@@ -39,6 +39,8 @@ python -m pytest hw1/Goga-ml
 - When abstaining, the answer is exactly `no evidence found` and the chat model is **not called**.
 - Citations are verified **in code**: any citation in the answer that isn't one of the retrieved chunks is removed and logged to stderr. Never trust the model's citations.
 - Keep it small and readable. No frameworks, no classes where a function will do.
+- Verify a model name with one live call before building on it. Models get retired (`gemini-2.5-flash` returned 404).
+- Chunk embeddings are cached in `src/.embed_cache.json` (git-ignored). Don't re-embed the whole corpus per question; the free tier allows 100 embedding requests/minute.
 
 ## You may
 - Create and edit files in `src/` (except `transcript.py`), including `src/tests/` and `src/requirements.txt`

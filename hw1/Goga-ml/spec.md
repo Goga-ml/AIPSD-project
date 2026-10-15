@@ -36,6 +36,8 @@ Assumed models: Gemini 2.5 Flash ($0.30 in / $2.50 out per 1M tokens) and Gemini
 Chat: 500 × $0.30/1M + 120 × $2.50/1M = $0.00045. Embedding: about $0.000003.
 **10 founders × 10 questions/day × $0.00045 × 30 = about $1.35/month.** Embedding the 3 transcripts once (about 2,000 tokens) costs less than $0.001.
 
+**Revised after the first live run (2026-10-15).** `gemini-2.5-flash` is retired, so the chat model is now `gemini-3.8-flash` ($0.75 in / $3.75 out per 1M, from third-party listings). Measured per answered question: about 300 tokens in and 370–600 out, mostly thinking tokens. That costs $0.0016–0.0025, so the realistic figure is **100 questions/day × ~$0.002 × 30 ≈ $6/month**. Questions that abstain cost $0. Chunk embeddings are now cached on disk instead of kept in memory, to stay under the free-tier embedding limit. Details in `golden.md`.
+
 ## Risks and safety
 - **Wrong citation:** the model cites the right fact with the wrong line. Mitigation: citations are checked in code against the retrieved chunks.
 - **Threshold too low or too high:** the tool either answers unrelated questions or abstains on real ones. Mitigation: tune it on the golden questions and record the value in INTERFACES.md.
