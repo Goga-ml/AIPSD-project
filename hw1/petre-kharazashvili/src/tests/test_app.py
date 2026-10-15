@@ -158,3 +158,21 @@ def test_gemini_bad_key_error_is_readable():
 
     raw = "Error code: 400 - [{'error': {'code': 400, 'message': 'API key not valid. Please pass a valid API key.'}}]"
     assert _gemini_message(FakeGenAiError(raw)) == "Gemini rejected the API key. Check GEMINI_API_KEY on the server."
+
+
+def test_gemini_quota_error_keeps_googles_sentence_and_drops_the_json():
+    # Seen live on the free tier.
+    from providers import _gemini_message
+
+    class FakeGenAiError(Exception):
+        status_code = 429
+
+    raw = (
+        "Error code: 429 - {'error': {'message': 'Rate limit exceeded for model gemini-3.8-flash "
+        "(limit: 20 requests per day on Free Tier). Please retry in 8h42m17s.', 'code': 'too_many_requests'}}"
+    )
+    assert _gemini_message(FakeGenAiError(raw)) == (
+        "Gemini rate limit or free-tier quota reached. Rate limit exceeded for model gemini-3.8-flash "
+        "(limit: 20 requests per day on Free Tier). Please retry in 8h42m17s."
+    )
+

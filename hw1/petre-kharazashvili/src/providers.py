@@ -9,13 +9,16 @@ that is safe to show to the founder (never the key, never a stack trace).
 import asyncio
 import json
 import os
+import re
 from dataclasses import dataclass
 from typing import AsyncIterator, Callable
 
 import httpx
 from google import genai
+from google.genai import types
 
 MAX_OUTPUT_TOKENS = 300
+GEMINI_TIMEOUT_MS = 30_000
 # USD per 1M tokens (input, output), ai.google.dev/gemini-api/docs/pricing, valid through 2026-12-31.
 PRICES = {"gemini-3.8-flash": (0.75, 3.75)}
 
@@ -62,15 +65,19 @@ async def stream_gemini(system: str, hypothesis: str, usage: Usage) -> AsyncIter
     key = os.environ.get("GEMINI_API_KEY")
     if not key:
         raise ProviderError("GEMINI_API_KEY is not set on the server.")
-    client = genai.Client(api_key=key)
+    # Seen live: on a used-up quota Gemini sends 429 with Retry-After of ~9 hours, and the SDK's
+    # default retry sleeps for it as-is, so the page just hangs. Only retry 503 (overloaded), once.
+    retry = types.HttpRetryOptions(attempts=1, http_status_codes=[503])
+    client = genai.Client(api_key=key, http_options=types.HttpOptions(retry_options=retry, timeout=GEMINI_TIMEOUT_MS))
     try:
-        stream = await client.aio.interactions.create(
-            model=usage.model,
-            system_instruction=system,
-            input=hypothesis,
-            generation_config={"max_output_tokens": MAX_OUTPUT_TOKENS, "thinking_level": "minimal"},
-            stream=True,
-        )
+        async with asyncio.timeout(GEMINI_TIMEOUT_MS / 1000):  # belt and braces around opening the stream
+            stream = await client.aio.interactions.create(
+                model=usage.model,
+                system_instruction=system,
+                input=hypothesis,
+                generation_config={"max_output_tokens": MAX_OUTPUT_TOKENS, "thinking_level": "low"},
+                stream=True,
+            )
         async with stream:
             async for event in stream:
                 if event.event_type == "step.delta" and getattr(event.delta, "type", None) == "text":
@@ -84,6 +91,8 @@ async def stream_gemini(system: str, hypothesis: str, usage: Usage) -> AsyncIter
                     raise ProviderError(f"Gemini returned an error: {message}")
     except ProviderError:
         raise
+    except TimeoutError as e:
+        raise ProviderError(f"Gemini didn't answer within {GEMINI_TIMEOUT_MS // 1000} s. Try again later.") from e
     except httpx.HTTPError as e:
         raise ProviderError(f"Couldn't reach Gemini ({type(e).__name__}). Check the network.") from e
     except Exception as e:
@@ -97,9 +106,11 @@ def _gemini_message(e: Exception) -> str:
         return "Gemini rejected the API key. Check GEMINI_API_KEY on the server."
     if status == 404:
         return "Gemini doesn't know that model. Check GROUNDWORK_CHAT_MODEL."
+    # Google's own sentence is readable ("... limit: 20 requests per day ... retry in 8h42m17s"); the JSON around it isn't.
+    match = re.search(r"""['"]message['"]:\s*['"](.+?)['"],\s*['"](?:code|status)""", str(e))
+    detail = match.group(1) if match else str(e)[:200]
     if status == 429:
-        return "Gemini rate limit or free-tier quota reached. Try again in a minute."
-    detail = str(getattr(e, "message", "") or e)[:200]
+        return f"Gemini rate limit or free-tier quota reached. {detail}"
     return f"Gemini request failed ({status or type(e).__name__}): {detail}"
 
 
