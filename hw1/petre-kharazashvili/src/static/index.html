@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hypothesis Linter</title>
+<style>
+  :root { --bg: #fafaf8; --fg: #1d1d1b; --muted: #6b6b66; --line: #d9d9d3; --card: #fff;
+          --ok: #1f7a3d; --ok-bg: #e3f3e7; --warn: #8a5a00; --warn-bg: #fdf0d5; --err: #a3271d; --err-bg: #fbe5e2; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161615; --fg: #ececea; --muted: #9b9b95; --line: #3a3a37; --card: #1f1f1d;
+            --ok: #7fd49a; --ok-bg: #1d3325; --warn: #f0c46a; --warn-bg: #3a2f17; --err: #f29b92; --err-bg: #3d1f1c; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 32px 16px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  p.lede { color: var(--muted); margin: 0 0 20px; }
+  textarea { width: 100%; min-height: 110px; padding: 12px; font: inherit; color: inherit; background: var(--card);
+             border: 1px solid var(--line); border-radius: 8px; resize: vertical; }
+  .row { display: flex; gap: 8px; align-items: center; margin: 10px 0 24px; }
+  button { font: inherit; padding: 8px 18px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: inherit; cursor: pointer; }
+  button.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+  button:disabled { opacity: .45; cursor: default; }
+  #status { color: var(--muted); font-size: .9rem; margin-left: auto; }
+  #result { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+  .badge { display: inline-block; font-weight: 700; font-size: .85rem; letter-spacing: .05em; padding: 4px 10px; border-radius: 999px; }
+  .badge.falsifiable { color: var(--ok); background: var(--ok-bg); }
+  .badge.vague { color: var(--warn); background: var(--warn-bg); }
+  .label { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; margin: 16px 0 2px; }
+  #error { color: var(--err); background: var(--err-bg); border-radius: 8px; padding: 10px 12px; margin-top: 16px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Hypothesis linter</h1>
+  <p class="lede">Is your hypothesis falsifiable? It needs a specific segment, observable behavior and a pass/fail threshold.</p>
+
+  <form id="form">
+    <textarea id="hypothesis" maxlength="500" placeholder="e.g. Farmers want better tools" required></textarea>
+    <div class="row">
+      <button type="submit" class="primary" id="lint">Lint</button>
+      <button type="button" id="stop" disabled>Stop</button>
+      <span id="status"></span>
+    </div>
+  </form>
+
+  <section id="result" hidden>
+    <span id="badge" class="badge" hidden></span>
+    <div class="label" id="reason-label" hidden>Reason</div>
+    <div id="reason"></div>
+    <div class="label" id="rewrite-label" hidden>Rewrite</div>
+    <div id="rewrite"></div>
+    <div id="error" hidden></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let controller = null;
+
+function show(id, on = true) { $(id).hidden = !on; }
+function setStatus(text) { $("status").textContent = text; }
+function setBusy(busy) { $("lint").disabled = busy; $("stop").disabled = !busy; }
+
+function reset() {
+  for (const id of ["badge", "reason-label", "rewrite-label", "error"]) show(id, false);
+  $("reason").textContent = $("rewrite").textContent = $("error").textContent = "";
+  show("result");
+}
+
+function showError(message) {
+  $("error").textContent = message;
+  show("error");
+}
+
+// Render whatever has arrived so far. Lines are "LABEL: value"; the last one may still be growing.
+function render(text) {
+  for (const line of text.split("\n")) {
+    const m = /^(VERDICT|REASON|REWRITE|ERROR): ?(.*)$/.exec(line);
+    if (!m) continue;
+    const [, label, value] = m;
+    if (label === "VERDICT" && (value === "falsifiable" || value === "vague")) {
+      $("badge").textContent = value.toUpperCase();
+      $("badge").className = "badge " + value;
+      show("badge");
+    } else if (label === "REASON") {
+      $("reason").textContent = value; show("reason-label");
+    } else if (label === "REWRITE") {
+      $("rewrite").textContent = value; show("rewrite-label");
+    } else if (label === "ERROR") {
+      showError(value);
+    }
+  }
+}
+
+$("form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  reset();
+  setBusy(true);
+  setStatus("Thinking…");
+  controller = new AbortController();
+  try {
+    const res = await fetch("/lint", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hypothesis: $("hypothesis").value }),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      showError(text.replace(/^ERROR:\s*/, "").trim() || `Server error (${res.status}).`);
+      setStatus("");
+      return;
+    }
+    setStatus("Streaming…");
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+    let received = "";
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      received += value;
+      render(received);
+    }
+    setStatus("Done.");
+  } catch (err) {
+    if (err.name === "AbortError") setStatus("Stopped.");
+    else { showError("Lost connection to the server. Is it running?"); setStatus(""); }
+  } finally {
+    setBusy(false);
+    controller = null;
+  }
+});
+
+$("stop").addEventListener("click", () => controller && controller.abort());
+</script>
+</body>
+</html>
