@@ -21,7 +21,7 @@
 2. `--no-llm` makes zero model calls and returns the hand-counted words and share; no Customer turns → share 1.0; empty transcript → share `null`, stderr error, exit 1.
 3. A malformed line → exit 1, `<file>:<line>` on stderr, no model call. Invalid model JSON on all 3 attempts (mocked) → exit 1, ratio still printed, every question `label: null`, `status: "unclassified"`.
 
-**G. Napkin math (assumed prices, verify at ai.google.dev).** Gemini 2.5 Flash, $0.30 in / $2.50 out per 1M tokens. Per interview: ~1,000 tokens in (15 questions + rubric), ~900 out → **≈ $0.0026**. 20 founders × 8 interviews = 160/month → **≈ $0.42/month** (≈ $1.25 if every call retries 3×). Transcription and hosting: $0 (text input, local CLI).
+**G. Napkin math.** Gemini 3.8 Flash, $0.75 in / $3.75 out per 1M tokens (introductory list price, checked 2026-10-15; $1.50 / $7.50 from 2027). Measured on the golden run: ~450 tokens in and ~2,300 out per 6-question interview. The output includes thinking tokens; the first estimate of 900 was too low. That is **≈ $0.009 per interview**, so 20 founders × 8 interviews = 160/month → **≈ $1.45/month**, ≈ $2.90 at 2027 prices. If every call retries 3×, it is up to 3× that. Transcription and hosting: $0 (text input, local CLI).
 
 **H. Risks.** *Wrong speaker tag* skews the ratio → strict parser, raw counts shown. *Wrong labels* → fixed rubric, validation, golden checks, report says labels are model judgments. *Misleading ratio* (ignores tone, long stories) → raw counts beside the share. *Privacy* → only interviewer questions leave the machine, `--no-llm` is offline, no transcript text in logs. *API failure or cost* → 3-attempt cap, failures shown as unclassified, key only from `GEMINI_API_KEY`, cost logged per call.
 

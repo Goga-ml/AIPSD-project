@@ -20,12 +20,17 @@ def check(interview: str, key: dict) -> list[tuple[str, bool]]:
     client = GeminiClient()
     result, code = run(str(FIXTURES / f"{interview}.txt"), client.generate, client.usage)
     print(to_markdown(result) + "\n")
+    ratio_ok = ("talk ratio equals hand count", result["talk_ratio"] == key["hand_count"])
+    if code != 0 or any(q["status"] != "classified" for q in result["questions"]):
+        # Label checks would pass vacuously on unclassified questions, so they fail instead.
+        return [("exit code 0, all classified", False), ratio_ok, ("label checks (not run: no classification)", False)]
+
     by_line = {q["citation"]["line"]: q for q in result["questions"]}
-    flagged_good = [l for l in key["good_question_lines"] if by_line[l]["label"] not in ("good", None)]
-    problems = [q for q in result["questions"] if q["status"] == "classified" and q["label"] != "good"]
+    flagged_good = [l for l in key["good_question_lines"] if by_line[l]["label"] != "good"]
+    problems = [q for q in result["questions"] if q["label"] != "good"]
     return [
-        ("exit code 0, all classified", code == 0),
-        ("talk ratio equals hand count", result["talk_ratio"] == key["hand_count"]),
+        ("exit code 0, all classified", True),
+        ratio_ok,
         ("every planted leading line has 'leading'",
          all("leading" in by_line[l]["labels"] for l in key["leading_question_lines"])),
         ("every expected label present",

@@ -19,6 +19,22 @@
 - **Came back wrong:** the md report for 20 flagged questions was 67 lines, breaking success criterion 3 (at most 40). The existing test used only 6 questions, so it never noticed. The validator also accepted `"line": true` as line 1, because a Python bool is an int.
 - **Caught by:** measuring a 20-question worst case and probing the validator with odd input. **Fix:** one line per flagged question, plus a regression test for each issue.
 
+### Entry 4 · Live golden runs with a real key
+- **Task:** **Otar** created a Gemini key and stored it as a user environment variable (never shown in chat). The agent ran `golden.py`.
+- **Came back wrong:**
+  - The default `gemini-2.5-flash` was a teammate's assumption, but Google returns 404 for it on new keys.
+  - `golden.py` printed vacuous PASSes for label checks on unclassified questions.
+  - The spec's token estimate was about 2.5× too low, because thinking tokens count as output.
+  - Immediate retries all hit the same 503 spike.
+- **Caught by:** running against the real API. None of this was visible to the mocked tests.
+- **Fix:**
+  - Default changed to `gemini-3.8-flash` at its list prices (checked on ai.google.dev).
+  - 401/403/404 are not retried.
+  - `golden.py` fails label checks when nothing was classified.
+  - Napkin math corrected.
+  - A 2 s / 4 s retry wait was added.
+- **Still open:** the free tier's 5 requests per minute plus provider overload meant only run 1 classified both transcripts. Run 2 classified one, run 3 none.
+
 ### Not verified yet
-- **No real model call has been made** (no `GEMINI_API_KEY` in the environment). Whether Gemini flags the planted questions is unknown until `golden.py` is run. See `golden.md`.
+- Live classification passed in 1 of 3 full runs (both transcripts) and on interview_01 in 2 of 3; the other attempts were provider failures, not wrong labels. A single run is not proof of stable accuracy.
 - **Otar** has not yet personally read the code diff or run the tests. *To confirm before submitting.*
