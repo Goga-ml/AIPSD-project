@@ -1,6 +1,6 @@
 # HW1 golden questions · Interview Technique Coach
 
-Run on 15 October 2026 on Windows 10, Python 3.13.7, from the repo root, by Claude Code. Commands are written with `S="hw1/Otar Khunashvili/src"`.
+Run on 15 October 2026 on Windows 10, Python 3.13.7, from the repo root, by Claude Code. Commands are written with `S=hw1/Ghmertoto/src`.
 Transcripts and the answer key are in `src/tests/fixtures/`. The shared `data/transcripts/` did not exist yet (Task 0 not pushed), so these are my own.
 
 **Two kinds of check, kept apart:**

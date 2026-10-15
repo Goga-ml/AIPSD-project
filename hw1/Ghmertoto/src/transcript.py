@@ -1,3 +1,7 @@
+"""Shared transcript parser for Groundwork. Spec: docs/INTERFACES.md sections 3-4.
+
+Everyone copies this file unchanged into their own src/. Change it only by PR (section 11).
+"""
 from dataclasses import dataclass, field
 from pathlib import Path
 

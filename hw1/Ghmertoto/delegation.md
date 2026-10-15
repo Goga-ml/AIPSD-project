@@ -4,7 +4,7 @@
 
 ### Entry 1 · Spec before code
 - **Task:** write `spec.md` (problem, users, 3 success criteria, context list, 3 acceptance criteria, napkin math, risks, out of scope), then stop.
-- **Plan check:** the agent stopped and asked about two conflicts first: folder name (brief says GitHub username) and repo (course repo vs team repo). **Otar** chose `hw1/Otar Khunashvili/` and `AIPSD-project`, then approved the spec.
+- **Plan check:** the agent stopped and asked about two conflicts first: folder name (brief says GitHub username) and repo (course repo vs team repo). **Otar** chose `hw1/Otar Khunashvili/` and `AIPSD-project`, then approved the spec. After merge, Otar asked to rename the folder to `hw1/Ghmertoto/` to match the brief, trim the spec to one page, and sync the parser copy with `shared/transcript.py`.
 - **Came back wrong:** section D said shares are null "if either total is zero", which contradicts AC2 (no Customer turns gives share 1.0). Prices for Gemini 2.5 Flash are copied from a teammate's spec, not verified.
 - **Caught by:** the agent rereading the spec against the acceptance criteria before writing the code. D was corrected to "if the combined total is zero". Prices are labelled as assumptions in the spec.
 

@@ -13,7 +13,7 @@ Groundwork is a privacy-first, open-source customer discovery tool for early-sta
 ## Layout (`src/`)
 | File | Kind | Job |
 |---|---|---|
-| `transcript.py` | deterministic | Shared parser, copied **unchanged** from INTERFACES §4. Do not edit here; fix `shared/` and copy again. |
+| `transcript.py` | deterministic | Shared parser, a byte-for-byte copy of `shared/transcript.py`. Do not edit here; fix `shared/` and copy again. |
 | `talk_ratio.py` | deterministic | Word counts per speaker and `interviewer_share`. |
 | `classifier.py` | LLM boundary | Builds the prompt, validates the model JSON, retries (3 attempts), marks failures `unclassified`. Takes any `call_model(prompt) -> str`. |
 | `llm.py` | LLM provider | Gemini call; logs tokens, cost and latency to stderr; keeps the `usage` totals. |
@@ -21,13 +21,13 @@ Groundwork is a privacy-first, open-source customer discovery tool for early-sta
 | `golden.py` | live check | Runs the golden transcripts against the real model and compares with `answer_key.json`. Not a test. |
 | `tests/` | pytest | Unit tests plus fixtures (`tests/fixtures/*.txt`, `answer_key.json`). |
 
-## How to run (from the repo root; quote the path, it has a space)
+## How to run (from the repo root)
 ```
-pip install -r "hw1/Otar Khunashvili/src/requirements.txt"
-python "hw1/Otar Khunashvili/src/coach.py" "hw1/Otar Khunashvili/src/tests/fixtures/interview_01.txt" --format md
-python "hw1/Otar Khunashvili/src/coach.py" <transcript.txt> --no-llm      # offline, talk ratio only
-pytest "hw1/Otar Khunashvili"                                              # no API key needed
-python "hw1/Otar Khunashvili/src/golden.py"                                # live model, needs GEMINI_API_KEY
+pip install -r hw1/Ghmertoto/src/requirements.txt
+python hw1/Ghmertoto/src/coach.py hw1/Ghmertoto/src/tests/fixtures/interview_01.txt --format md
+python hw1/Ghmertoto/src/coach.py <transcript.txt> --no-llm      # offline, talk ratio only
+pytest hw1/Ghmertoto                                              # no API key needed
+python hw1/Ghmertoto/src/golden.py                                # live model, needs GEMINI_API_KEY
 ```
 
 ## Configuration (environment only)
@@ -53,4 +53,4 @@ python "hw1/Otar Khunashvili/src/golden.py"                                # liv
 ## You may not
 - Delete, skip or weaken tests to make them pass.
 - Call the real model from a test, or in a loop without the 3-attempt cap.
-- Edit files outside `hw1/Otar Khunashvili/` (shared files change through a PR, INTERFACES §11).
+- Edit files outside `hw1/Ghmertoto/` (shared files change through a PR, INTERFACES §11).
