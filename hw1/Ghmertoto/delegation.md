@@ -24,17 +24,17 @@
 - **Came back wrong:**
   - The default `gemini-2.5-flash` was a teammate's assumption, but Google returns 404 for it on new keys.
   - `golden.py` printed vacuous PASSes for label checks on unclassified questions.
-  - The spec's token estimate was about 2.5× too low, because thinking tokens count as output.
+  - The spec's token estimate was nearly 3× too low (about 2,500 output tokens, not 900), because thinking tokens count as output.
   - Immediate retries all hit the same 503 spike.
 - **Caught by:** running against the real API. None of this was visible to the mocked tests.
 - **Fix:**
   - Default changed to `gemini-3.8-flash` at its list prices (checked on ai.google.dev).
-  - 401/403/404 are not retried.
+  - 401/403/404 are not retried; after run 4, 429 (quota) is not retried either.
   - `golden.py` fails label checks when nothing was classified.
   - Napkin math corrected.
   - A 2 s / 4 s retry wait was added.
-- **Still open:** the free tier's 5 requests per minute plus provider overload meant only run 1 classified both transcripts. Run 2 classified one, run 3 none.
+- **Still open:** the free tier's 5 requests per minute plus provider overload meant only run 1 classified both transcripts. Runs 2 and 4 classified one, run 3 none. Run 4 used up the daily limit of 20 requests.
 
 ### Not verified yet
-- Live classification passed in 1 of 3 full runs (both transcripts) and on interview_01 in 2 of 3; the other attempts were provider failures, not wrong labels. A single run is not proof of stable accuracy.
+- Live classification passed in 1 of 4 full runs (both transcripts) and on interview_01 in 3 of 4; the other attempts were provider failures, not wrong labels. A single run is not proof of stable accuracy.
 - **Otar** has not yet personally read the code diff or run the tests. *To confirm before submitting.*

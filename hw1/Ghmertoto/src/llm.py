@@ -47,9 +47,10 @@ class GeminiClient:
                 config=types.GenerateContentConfig(temperature=0, response_mime_type="application/json"),
             )
         except errors.ClientError as exc:
-            if exc.code in (401, 403, 404):  # bad key or unknown model: retrying cannot help
-                raise LLMConfigError(f"{exc.code} for model {self.model}: check GEMINI_API_KEY and "
-                                     "GROUNDWORK_CHAT_MODEL") from exc
+            # Bad key, unknown model or exhausted quota: a retry seconds later cannot help.
+            if exc.code in (401, 403, 404, 429):
+                raise LLMConfigError(f"{exc.code} for model {self.model}: check GEMINI_API_KEY, "
+                                     "GROUNDWORK_CHAT_MODEL and your quota") from exc
             raise
         latency_ms = (time.perf_counter() - start) * 1000
 

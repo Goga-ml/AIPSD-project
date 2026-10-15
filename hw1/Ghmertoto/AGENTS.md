@@ -34,7 +34,7 @@ python hw1/Ghmertoto/src/golden.py                                # live model, 
 - `GEMINI_API_KEY`: required for model calls. **Never hardcode it, never write it to a file, never commit `.env`.**
 - `GROUNDWORK_CHAT_MODEL`: default `gemini-3.8-flash`. (`gemini-2.5-flash` returned 404 "no longer available to new users" on 2026-10-15.)
 - `GROUNDWORK_PRICE_IN`, `GROUNDWORK_PRICE_OUT`: USD per 1M tokens, defaults `0.75` and `3.75`. These are the Gemini 3.8 Flash introductory prices, checked 2026-10-15 on ai.google.dev/gemini-api/docs/pricing. They become $1.50 / $7.50 on 2027-01-01.
-- A 401, 403 or 404 from the API (bad key or unknown model) is not retried. Other API errors, such as a 503, use the 3 attempts.
+- A 401, 403, 404 or 429 from the API (bad key, unknown model, exhausted quota) is not retried. Other errors, such as a 503, get 3 attempts with a 2 s / 4 s wait. A free-tier key allows about 5 requests per minute and 20 per day for this model.
 
 ## Input and output
 - Input: one transcript in the INTERFACES §3 format (`Interviewer: ` / `Customer: ` lines, optional `# key: value` headers, blank lines allowed).

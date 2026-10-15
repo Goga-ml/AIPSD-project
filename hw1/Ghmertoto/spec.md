@@ -8,7 +8,7 @@
 **B. Users.** An early-stage founder with a fresh interview transcript in the shared format, preparing for the next interview.
 
 **C. Success criteria**
-1. Talk ratio equals the hand count on 3/3 golden transcripts and in every unit test; computed in code only.
+1. Talk ratio equals an independent count on every golden and shared transcript (5 files) and in every unit test; computed in code only.
 2. With the real model, 100 % of planted leading lines get `leading`; at most 1 planted good question per transcript is flagged.
 3. `--format md` is ≤ 40 lines for 20 questions; every flagged question has an explanation ≤ 20 words and a rewrite ≤ 25 words ending in "?"; good questions get no rewrite.
 
@@ -21,7 +21,7 @@
 2. `--no-llm` makes zero model calls and returns the hand-counted words and share; no Customer turns → share 1.0; empty transcript → share `null`, stderr error, exit 1.
 3. A malformed line → exit 1, `<file>:<line>` on stderr, no model call. Invalid model JSON on all 3 attempts (mocked) → exit 1, ratio still printed, every question `label: null`, `status: "unclassified"`.
 
-**G. Napkin math.** Gemini 3.8 Flash, $0.75 in / $3.75 out per 1M tokens (introductory list price, checked 2026-10-15; $1.50 / $7.50 from 2027). Measured on the golden run: ~450 tokens in and ~2,300 out per 6-question interview. The output includes thinking tokens; the first estimate of 900 was too low. That is **≈ $0.009 per interview**, so 20 founders × 8 interviews = 160/month → **≈ $1.45/month**, ≈ $2.90 at 2027 prices. If every call retries 3×, it is up to 3× that. Transcription and hosting: $0 (text input, local CLI).
+**G. Napkin math.** Gemini 3.8 Flash, $0.75 in / $3.75 out per 1M tokens (introductory list price, checked 2026-10-15; $1.50 / $7.50 from 2027). Measured in the golden runs: ~450 tokens in and ~2,500 out (1,868–2,867) per 6-question interview. The output includes thinking tokens; the first estimate of 900 was too low. That is **≈ $0.01 per interview**, so 20 founders × 8 interviews = 160/month → **≈ $1.55/month**, ≈ $3.10 at 2027 prices. If every call retries 3×, it is up to 3× that. Transcription and hosting: $0 (text input, local CLI).
 
 **H. Risks.** *Wrong speaker tag* skews the ratio → strict parser, raw counts shown. *Wrong labels* → fixed rubric, validation, golden checks, report says labels are model judgments. *Misleading ratio* (ignores tone, long stories) → raw counts beside the share. *Privacy* → only interviewer questions leave the machine, `--no-llm` is offline, no transcript text in logs. *API failure or cost* → 3-attempt cap, failures shown as unclassified, key only from `GEMINI_API_KEY`, cost logged per call.
 
