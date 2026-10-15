@@ -1,0 +1,14 @@
+# segment: freelance designers
+
+Interviewer: Walk me through how you sent your last invoice.
+Customer: I made it in Word, exported a PDF and emailed it. The client paid 40 days late.
+Interviewer: If there was a tool that chased late payments, would you use it?
+Customer: Probably, yeah.
+Interviewer: Our app InvoicePing sends automatic reminders and connects to your bank; can I show you how it works?
+Customer: Sure.
+Interviewer: What do you do today when a client pays late?
+Customer: I wait two weeks, then send an awkward email.
+Interviewer: Honestly, what do you think of our idea, do you love it?
+Customer: It sounds great.
+Interviewer: How much would you pay per month for something like this?
+Customer: Maybe ten dollars.
