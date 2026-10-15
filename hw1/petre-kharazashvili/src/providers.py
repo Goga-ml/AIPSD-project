@@ -20,7 +20,7 @@ from google.genai import types
 MAX_OUTPUT_TOKENS = 300
 GEMINI_TIMEOUT_MS = 30_000
 # USD per 1M tokens (input, output), ai.google.dev/gemini-api/docs/pricing, valid through 2026-12-31.
-PRICES = {"gemini-3.8-flash": (0.75, 3.75)}
+PRICES = {"gemini-3.8-flash": (0.75, 3.75), "gemini-3.6-flash": (0.75, 3.75)}
 
 MOCK_OUTPUT = (
     "VERDICT: VAGUE\n"

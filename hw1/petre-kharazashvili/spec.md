@@ -9,7 +9,7 @@ Founders write hypotheses like "Farmers want better tools". Nothing can prove th
 Early-stage founders using Groundwork, before they run their first customer interviews. Many self-host and run a slow local model through Ollama, so they wait a long time for any answer.
 
 ## Success criteria
-1. **Correct verdicts:** 3 of 3 golden hypotheses get the expected verdict on `gemini-3.8-flash`.
+1. **Correct verdicts:** 3 of 3 golden hypotheses get the expected verdict on `gemini-3.8-flash`. *(Golden runs used `gemini-3.6-flash`, same price: the 3.8 free tier of 20 requests/day was already used up. See golden.md.)*
 2. **Fast first signal:** on Gemini the verdict line arrives in under 2 s (time to first byte, measured with `curl -N`), while the rest is still streaming.
 3. **Cheap and visible:** each lint costs under $0.002, and every request logs its tokens and cost to stderr.
 
