@@ -17,8 +17,8 @@ Early-stage founders using Groundwork who are writing the hypotheses they'll tes
 ## Design
 - **Wire format (INTERFACES §9).** `GET /` serves the form. `POST /lint` takes `{"hypothesis": "..."}` and streams `text/plain` as three lines, in order: `VERDICT: falsifiable|vague`, `REASON: <1-3 sentences>`, `REWRITE: <text>`. Default port 8000.
 - **Model output** is the same plain text, so it can be parsed while streaming. For a falsifiable input the model writes `REWRITE: UNCHANGED`. An incremental parser on the server lowercases the verdict and swaps `UNCHANGED` for the founder's exact input, so "unchanged" is guaranteed by code, not trusted from the model.
-- **Providers.** `LLM_PROVIDER=gemini|ollama|mock` selects one implementation of a single async-generator interface that yields text chunks. Gemini: `GEMINI_API_KEY`, `GROUNDWORK_CHAT_MODEL` (default `gemini-3.8-flash`). Ollama: `OLLAMA_URL`, `OLLAMA_MODEL`. The mock streams a canned answer with small delays, for tests and keyless development. Temperature 0.1.
-- **Secrets.** The key stays server-side in a gitignored `.env`, and the repo ships a `.env.example`.
+- **Providers.** `LLM_PROVIDER=gemini|ollama|mock` selects one implementation of a single async-generator interface that yields text chunks. Gemini: `GEMINI_API_KEY`, `GROUNDWORK_CHAT_MODEL` (default `gemini-3.8-flash`). Ollama: `OLLAMA_URL`, `OLLAMA_MODEL`. The mock streams a canned answer with small delays, for tests and keyless development. Temperature 0.1 for Ollama. Gemini 3.6+ ignores temperature (Google docs), so Gemini gets the lowest thinking level instead, to get the verdict out quickly and cut cost. Output is capped at 300 tokens.
+- **Secrets.** The key stays server-side, in a gitignored `.env` (loaded with `python-dotenv`) or an environment variable that's already set. The repo ships a `.env.example`.
 - **Stack.** Python 3.11, FastAPI `StreamingResponse`, one static HTML page (vanilla JS, inline CSS) that reads the stream with `fetch` + `ReadableStream`.
 
 ## Context list
