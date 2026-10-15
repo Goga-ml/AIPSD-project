@@ -11,13 +11,14 @@
 | **A 429 hung the page:** the SDK slept for `Retry-After` ~8.7 h, and two fixes guessed from the docstring failed. Also, `thinking_level: "minimal"` was rejected by the model | An HTTP trace, then reading the SDK source | Retry only 503, a 30 s cap, `"low"` |
 | G1 and G2 are the prompt's own few-shots (G1 was copied word for word); the latency target was missed (4.6 to 26.6 s) | Reading the golden output | Documented in golden.md, not fixed |
 
-**Lesson:** every Gemini bug surfaced only in live runs, because the tests use mocks. The first test run was 27/27 green; breaking the code on purpose showed that one test checked less than it seemed to. Nobody has opened the page in a browser yet.
+**Lesson:** every Gemini bug surfaced only in live runs, because the tests use mocks. The first test run was 27/27 green; breaking the code on purpose showed that one test checked less than it seemed to. I checked the page in a browser myself (mock provider): the badge appears first, and Stop freezes the stream.
 
 ## My additions
 **What I caught that the AI didn't:** the spec didn't follow the course template, and the AI installed software I hadn't asked for (both in the table above). I also kept the API key out of the chat and the repo: it lives in macOS Keychain.
 
 **Checks worth doing myself** (the AI can't verify these for me):
-- [ ] Open the page in a browser: the badge appears before the reason finishes, Stop freezes the output, and an error shows when the server is down.
+- [x] Open the page in a browser: the badge appears before the reason finishes, and Stop freezes the output (done 2026-10-15, mock provider).
+- [ ] Stop the server mid-use and check the page shows the "Lost connection" error.
 - [ ] Read `prompt.txt` and the three golden outputs: do I agree with the rubric and the verdicts, and do the rewrites keep my intent?
 - [ ] Read `parser.py`'s substitution for falsifiable inputs; it's the one rule the whole AC2 depends on.
 - [ ] `git log -p`: no key, `.env` or `.venv` committed (`src/.gitignore` and the root `.gitignore`).
