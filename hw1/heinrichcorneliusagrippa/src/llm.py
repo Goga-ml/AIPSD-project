@@ -39,21 +39,25 @@ def complete_json(system: str, user: str, schema) -> tuple[str, dict]:
     Returns the raw reply text (the caller validates it) and one usage dict.
     """
     from google import genai
-    from google.genai import types
+    from google.genai import errors, types
 
     if not os.environ.get("GEMINI_API_KEY"):
         raise RuntimeError("GEMINI_API_KEY is not set")
     client = genai.Client()  # reads GEMINI_API_KEY from the environment
     t0 = time.perf_counter()
-    resp = client.models.generate_content(
-        model=MODEL,
-        contents=user,
-        config=types.GenerateContentConfig(
-            system_instruction=system,
-            response_mime_type="application/json",
-            response_schema=schema,
-        ),
-    )
+    try:
+        resp = client.models.generate_content(
+            model=MODEL,
+            contents=user,
+            config=types.GenerateContentConfig(
+                system_instruction=system,
+                response_mime_type="application/json",
+                response_schema=schema,
+            ),
+        )
+    except errors.APIError as e:  # quota, bad key, unknown model: report it, don't dump a traceback
+        first_line = (e.message or "").splitlines()[0] if e.message else ""
+        raise RuntimeError(f"Gemini API error {e.code} {e.status}: {first_line}") from None
     um = resp.usage_metadata
     tokens_in = um.prompt_token_count or 0
     tokens_out = (um.candidates_token_count or 0) + (um.thoughts_token_count or 0)

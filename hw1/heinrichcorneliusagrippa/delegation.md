@@ -15,6 +15,12 @@
 - **AGENTS.md change:** added "Never call the real model from a test", "Ask first before changing the output shape or the 90 threshold" and "data/ is shared, change it only by PR".
 - **Cost:** about 0 model spend (offline tests only).
 
+### Entry 1b · First real run exposed two bugs
+- **What happened:** the first live run on Windows (PowerShell, Python 3.14) hit Gemini's free-tier limit: `429 RESOURCE_EXHAUSTED`, 20 requests per day per model.
+- **Came back wrong:** (1) `extract.py` caught only its own errors, so the API error printed a 60-line traceback instead of the one-line `error:` that spec criterion 4 promises. (2) The failed runs left empty result files, and `check_planted.py` crashed on them. It also couldn't read files saved by Windows PowerShell's `>`, which writes UTF-16.
+- **Caught by:** the first real run on my own machine. The 15 offline tests passed because none of them simulated an API error or a Windows-encoded file.
+- **Decision:** `llm.py` now turns any Gemini `APIError` into one clean line, `error: Gemini API error 429 RESOURCE_EXHAUSTED: ...` with exit 1. `check_planted.py` reads UTF-16 or UTF-8 and reports an empty file as a clear error. Added 3 tests; the 429 test fails on the old `llm.py` and passes on the new one. 18 passed.
+
 ### Entry 2 · My own review  *(fill in yourself, Dachi; do not leave this generated)*
 - **What I read in the diff:**
 - **What I ran myself, and the output:**

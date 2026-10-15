@@ -2,7 +2,7 @@
 
 Three checks of the feature against `spec.md`, using the team's shared `data/transcripts/` and `answer_key.json`. Run from the repo root. Model: `gemini-3.8-flash`.
 
-> **Status (2026-10-15):** offline tests pass (`pytest hw1/heinrichcorneliusagrippa`: 15 passed, fake model, no key). **Q1 and Q2 have not been run against the real model yet**, so their "Actual" cells stay empty until real output is pasted in. Q3 needs no model and was run.
+> **Status (2026-10-15):** offline tests pass (`pytest hw1/heinrichcorneliusagrippa`: 18 passed, fake model, no key). **Q1 and Q2 have not been run against the real model yet**, so their "Actual" cells stay empty until real output is pasted in. Q3 needs no model and was run.
 
 ```
 F=hw1/heinrichcorneliusagrippa

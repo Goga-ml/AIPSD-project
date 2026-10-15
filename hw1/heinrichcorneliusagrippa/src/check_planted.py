@@ -9,6 +9,15 @@ import json
 import sys
 
 
+def load(path: str) -> dict:
+    """Read a result file. Windows PowerShell's `>` writes UTF-16, so check the BOM first."""
+    raw = open(path, "rb").read()
+    text = raw.decode("utf-16") if raw[:2] in (b"\xff\xfe", b"\xfe\xff") else raw.decode("utf-8-sig")
+    if not text.strip():
+        raise ValueError(f"{path} is empty: extract.py probably failed, see its error message")
+    return json.loads(text)
+
+
 def check(key: dict, result: dict) -> list[tuple[dict, bool]]:
     got = {(e["type"], e["citation"]["line"]) for e in result["evidence"]}
     return [(p, (p["type"], p["line"]) in got) for p in key[result["interview_id"]]["planted"]]
@@ -21,7 +30,11 @@ def main(argv: list[str]) -> int:
     key = json.load(open(argv[0], encoding="utf-8"))
     found = total = 0
     for path in argv[1:]:
-        result = json.load(open(path, encoding="utf-8"))
+        try:
+            result = load(path)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
         s = result["stats"]
         print(f"{result['interview_id']}: accepted {s['accepted']}, rejected {s['rejected']}")
         for p, ok in check(key, result):

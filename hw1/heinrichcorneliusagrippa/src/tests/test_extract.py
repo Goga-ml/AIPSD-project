@@ -68,3 +68,25 @@ def test_cli_exit_1_on_malformed_transcript(tmp_path, capsys):
 def test_cost_formula():
     assert llm.cost_usd("gemini-3.8-flash", 1_000_000, 0) == 0.75
     assert llm.cost_usd("gemini-3.8-flash", 2000, 400) == round((2000 * 0.75 + 400 * 3.75) / 1e6, 6)
+
+
+def test_api_error_becomes_clean_exit_1(monkeypatch, capsys):
+    # simulate Gemini's 429 quota error without any network call
+    from google import genai
+    from google.genai import errors
+
+    class FailingModels:
+        def generate_content(self, **kwargs):
+            raise errors.ClientError(429, {"error": {"code": 429, "status": "RESOURCE_EXHAUSTED",
+                                                     "message": "You exceeded your current quota.\nDetails..."}})
+
+    class FakeClient:
+        models = FailingModels()
+
+    monkeypatch.setenv("GEMINI_API_KEY", "test-not-a-real-key")
+    monkeypatch.setattr(genai, "Client", lambda: FakeClient())
+    code = extract.main([str(DATA / "interview_01.txt")])
+    out, err = capsys.readouterr()
+    assert code == 1 and out == ""
+    assert "error: Gemini API error 429 RESOURCE_EXHAUSTED: You exceeded your current quota." in err
+    assert "Traceback" not in err

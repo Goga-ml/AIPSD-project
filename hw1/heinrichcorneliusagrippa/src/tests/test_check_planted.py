@@ -26,3 +26,16 @@ def test_answer_key_lines_point_at_the_right_speaker():
         speaker = {t.line: t.speaker for t in parse_transcript(DATA / f"{iid}.txt").turns}
         assert all(speaker[p["line"]] == "Customer" for p in entry["planted"])
         assert all(speaker[n] == "Interviewer" for n in entry["leading_question_lines"])
+
+
+def test_reads_utf16_file_from_powershell(tmp_path):
+    f = tmp_path / "interview_01.json"
+    f.write_bytes(json.dumps(_result([])).encode("utf-16"))  # what PowerShell 5.1 `>` produces
+    assert check_planted.load(str(f))["interview_id"] == "interview_01"
+
+
+def test_empty_result_file_is_a_clean_error(tmp_path, capsys):
+    f = tmp_path / "interview_01.json"
+    f.write_text("")
+    assert check_planted.main([str(DATA / "answer_key.json"), str(f)]) == 1
+    assert "is empty" in capsys.readouterr().err
