@@ -1,7 +1,7 @@
 """Ask Across Interviews: answer a founder's question from the interview transcripts, with citations.
 
 Usage (from the repo root):
-    python "hw1/Goga Jintcharadze/src/ask.py" "What do people currently pay?" [--min-score 0.6] [--k 5]
+    python hw1/Goga-ml/src/ask.py "What do people currently pay?" [--min-score 0.6] [--k 5]
 
 Prints the JSON from docs/INTERFACES.md section 8 to stdout, logs and cost to stderr.
 """

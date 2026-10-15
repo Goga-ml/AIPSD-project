@@ -13,21 +13,22 @@ Groundwork is an open-source tool that turns customer-discovery interviews into 
 
 ## Layout
 ```
-hw1/Goga Jintcharadze/
+hw1/Goga-ml/
+  spec.md · golden.md · delegation.md · journal.md · AGENTS.md
   src/
-    transcript.py   ← copy of shared/transcript.py, DO NOT EDIT here
-    retrieval.py    ← chunking, embedding, cosine ranking
-    ask.py          ← CLI entry point: retrieve, abstain or answer, verify citations
-  tests/            ← pytest; unit tests use fake embeddings, no network
-  requirements.txt
+    transcript.py     ← copy of shared/transcript.py, DO NOT EDIT here
+    retrieval.py      ← chunking, embedding, cosine ranking
+    ask.py            ← CLI entry point: retrieve, abstain or answer, verify citations
+    requirements.txt
+    tests/            ← pytest; unit tests use fake embeddings, no network
 ```
 
 ## How to run
 All commands run from the **repo root**.
 ```
-pip install -r "hw1/Goga Jintcharadze/requirements.txt"
-python "hw1/Goga Jintcharadze/src/ask.py" "What do people currently pay?"
-python -m pytest "hw1/Goga Jintcharadze/tests"
+pip install -r hw1/Goga-ml/src/requirements.txt
+python hw1/Goga-ml/src/ask.py "What do people currently pay?"
+python -m pytest hw1/Goga-ml
 ```
 
 ## Conventions
@@ -40,7 +41,7 @@ python -m pytest "hw1/Goga Jintcharadze/tests"
 - Keep it small and readable. No frameworks, no classes where a function will do.
 
 ## You may
-- Create and edit files in `src/` (except `transcript.py`), `tests/` and `requirements.txt` in this folder
+- Create and edit files in `src/` (except `transcript.py`), including `src/tests/` and `src/requirements.txt`
 - Propose dependency changes (ask before adding)
 - Propose changes to `docs/INTERFACES.md` or `shared/`, but only as a suggestion to the human. Don't edit them.
 

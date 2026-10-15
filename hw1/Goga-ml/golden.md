@@ -6,8 +6,8 @@ The three acceptance criteria from `spec.md`, checked against the planted facts 
 
 Run from the repo root:
 ```
-.venv\Scripts\python -m pytest "hw1/Goga Jintcharadze/tests" -q
-.venv\Scripts\python "hw1/Goga Jintcharadze/src/ask.py" "<question>"
+.venv\Scripts\python -m pytest hw1/Goga-ml -q
+.venv\Scripts\python hw1/Goga-ml/src/ask.py "<question>"
 ```
 
 | # | Input | Expected behavior | Offline result | Live result | Pass/Fail |

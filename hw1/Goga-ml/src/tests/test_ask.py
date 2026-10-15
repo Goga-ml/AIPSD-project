@@ -8,7 +8,7 @@ import pytest
 from ask import ABSTAIN, answer_question, verify_citations
 from retrieval import load_chunks, rank
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[4]
 TRANSCRIPTS = REPO_ROOT / "data" / "transcripts"
 ANSWER_KEY = json.loads((TRANSCRIPTS / "answer_key.json").read_text(encoding="utf-8"))
 
