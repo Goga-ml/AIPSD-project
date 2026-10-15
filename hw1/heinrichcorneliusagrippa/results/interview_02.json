@@ -1,0 +1,85 @@
+{
+  "interview_id": "interview_02",
+  "evidence": [
+    {
+      "id": "interview_02-e1",
+      "type": "pain",
+      "summary": "The bakery wastes about fifteen percent of the bread most days.",
+      "quote": "We throw away about fifteen percent of the bread most days.",
+      "citation": {
+        "interview_id": "interview_02",
+        "line": 7
+      },
+      "match_score": 100.0
+    },
+    {
+      "id": "interview_02-e2",
+      "type": "pain",
+      "summary": "Ran out of butter on a Friday and could not make croissants for the weekend.",
+      "quote": "Nobody posted that butter was low, we ran out on a Friday and could not make croissants for the whole weekend.",
+      "citation": {
+        "interview_id": "interview_02",
+        "line": 17
+      },
+      "match_score": 100.0
+    },
+    {
+      "id": "interview_02-e3",
+      "type": "workaround",
+      "summary": "Uses gut feeling and past sales to decide how much bread to bake.",
+      "quote": "Mostly gut feeling. I look at what sold the same day last week and add a little.",
+      "citation": {
+        "interview_id": "interview_02",
+        "line": 5
+      },
+      "match_score": 100.0
+    },
+    {
+      "id": "interview_02-e4",
+      "type": "workaround",
+      "summary": "Staff post low stock in a WhatsApp group for end of day ordering.",
+      "quote": "My staff post what is running low in a WhatsApp group, and I order at the end of the day.",
+      "citation": {
+        "interview_id": "interview_02",
+        "line": 11
+      },
+      "match_score": 100.0
+    },
+    {
+      "id": "interview_02-e5",
+      "type": "spending",
+      "summary": "Pays nephew 200 GEL a month to maintain the ordering spreadsheet.",
+      "quote": "I pay my nephew 200 GEL a month to keep the ordering spreadsheet up to date.",
+      "citation": {
+        "interview_id": "interview_02",
+        "line": 13
+      },
+      "match_score": 100.0
+    },
+    {
+      "id": "interview_02-e6",
+      "type": "commitment",
+      "summary": "Agreed to use the beta for two weeks and make two introductions to other bakery owners.",
+      "quote": "Send me the beta and I will use it for two weeks, and I will introduce you to two other bakery owners I know.",
+      "citation": {
+        "interview_id": "interview_02",
+        "line": 19
+      },
+      "match_score": 100.0
+    }
+  ],
+  "rejected": [],
+  "stats": {
+    "extracted": 6,
+    "accepted": 6,
+    "rejected": 0,
+    "attempts": 1
+  },
+  "usage": {
+    "model": "gemini-3.5-flash-lite",
+    "calls": 1,
+    "input_tokens": 583,
+    "output_tokens": 381,
+    "cost_usd": 0.001127
+  }
+}
