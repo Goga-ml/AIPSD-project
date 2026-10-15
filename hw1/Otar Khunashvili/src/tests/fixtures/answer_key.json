@@ -1,0 +1,16 @@
+{
+  "interview_01": {
+    "segment": "independent cafe owners",
+    "hand_count": { "interviewer_words": 58, "customer_words": 61, "interviewer_share": 0.49 },
+    "leading_question_lines": [6, 10, 14],
+    "good_question_lines": [4, 8, 12],
+    "expected_labels": { "4": ["good"], "6": ["leading"], "8": ["good"], "10": ["leading"], "12": ["good"], "14": ["leading"] }
+  },
+  "interview_02": {
+    "segment": "freelance designers",
+    "hand_count": { "interviewer_words": 73, "customer_words": 35, "interviewer_share": 0.68 },
+    "leading_question_lines": [],
+    "good_question_lines": [3, 9],
+    "expected_labels": { "3": ["good"], "5": ["hypothetical"], "7": ["pitching"], "9": ["good"], "11": ["compliment_fishing"], "13": ["hypothetical"] }
+  }
+}
