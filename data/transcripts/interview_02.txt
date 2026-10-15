@@ -1,0 +1,21 @@
+# segment: independent bakery owners
+# date: 2026-10-11
+
+Interviewer: Walk me through how you decide how much bread to bake each day.
+Customer: Mostly gut feeling. I look at what sold the same day last week and add a little.
+Interviewer: How well does that work?
+Customer: Not great. We throw away about fifteen percent of the bread most days.
+Interviewer: So waste is your biggest problem, right?
+Customer: I guess, yes.
+Interviewer: How do you handle ordering flour and butter?
+Customer: My staff post what is running low in a WhatsApp group, and I order at the end of the day.
+Interviewer: Do you pay anyone or anything to help with this?
+Customer: I pay my nephew 200 GEL a month to keep the ordering spreadsheet up to date.
+Interviewer: Our app uses AI to forecast demand with 95 percent accuracy and would save you thousands.
+Customer: That would be nice if it works.
+Interviewer: What happened the last time the WhatsApp system failed?
+Customer: Nobody posted that butter was low, we ran out on a Friday and could not make croissants for the whole weekend.
+Interviewer: If we had something to test next month, what would you do?
+Customer: Send me the beta and I will use it for two weeks, and I will introduce you to two other bakery owners I know.
+Interviewer: Is there anything you have tried before?
+Customer: A supplier offered free ordering software, but it only worked with their own products, so I stopped.

@@ -1,0 +1,19 @@
+# segment: mobile coffee cart operators
+# date: 2026-10-12
+
+Interviewer: Tell me about the last event you worked.
+Customer: A university fair two weeks ago. We ran out of cups after three hours and had to close early.
+Interviewer: How much do you think that cost you?
+Customer: About 600 GEL in sales, that was a good day until the cups ran out.
+Interviewer: How do you keep track of supplies now?
+Customer: A free Google Sheet on my phone, but I forget to update it when it is busy.
+Interviewer: Do you pay for any software or services for stock?
+Customer: No, nothing. I do not pay for any tools, money is tight with a cart.
+Interviewer: Would you use an app that reminded you to reorder?
+Customer: Probably, yeah.
+Interviewer: When you run short before an event, what do you do?
+Customer: I drive to the cash-and-carry the night before and buy extra cups and milk, it takes about two hours.
+Interviewer: Honestly, do you think this is a good idea?
+Customer: It sounds like a good idea, I am sure lots of people would want it.
+Interviewer: Is there anything you would spend money on to fix this?
+Customer: For events I would pay maybe 20 GEL a month, but only if it works offline, the signal at fairs is terrible.

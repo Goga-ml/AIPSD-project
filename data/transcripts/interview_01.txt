@@ -1,0 +1,21 @@
+# segment: independent cafe owners
+# date: 2026-10-10
+
+Interviewer: Tell me about the last time you ran out of an ingredient.
+Customer: Last Saturday we ran out of oat milk by 11, lost maybe twenty orders.
+Interviewer: Wouldn't an app that predicts stock be great for you?
+Customer: Sure, sounds nice.
+Interviewer: How do you track stock today?
+Customer: A paper sheet on the fridge, and I text my supplier every Thursday.
+Interviewer: Do you pay for anything to help with that?
+Customer: We pay 45 GEL a month for a POS add-on, but it doesn't do inventory.
+Interviewer: How often does running out happen?
+Customer: Milk and croissants, maybe twice a month. Coffee beans almost never, I keep two extra bags.
+Interviewer: What did you do the last time it happened?
+Customer: I sent my barista to the supermarket and we paid retail, almost double the supplier price.
+Interviewer: Have you tried any other tools for ordering?
+Customer: I tried a free inventory app last year but stopped after a week, entering everything by hand took too long.
+Interviewer: You'd love it if all of that was automatic, wouldn't you?
+Customer: Of course, who wouldn't.
+Interviewer: Anything else you want to tell me?
+Customer: Just that Saturdays are the hardest, the morning rush is when we run out.

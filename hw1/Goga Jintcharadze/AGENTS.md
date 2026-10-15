@@ -1,33 +1,51 @@
-# AGENTS.md · [Product name]
+# AGENTS.md · Groundwork · Ask Across Interviews
 
-*Instructions for AI coding agents working in this repo. Keep it current; agents read this first.*
+*Instructions for AI coding agents working in this folder. Read this first, then `spec.md`, then `docs/INTERFACES.md` at the repo root.*
 
 ## What this project is
-One paragraph: what we are building and for whom.
+Groundwork is an open-source tool that turns customer-discovery interviews into evidence for founders. This folder is **Task 4: Ask Across Interviews**. It's a CLI that answers a founder's question from the interview transcripts, cites the interview and line for every claim, and says "no evidence found" when the transcripts don't contain the answer. `spec.md` is the source of truth for scope and acceptance criteria.
 
 ## Stack
-- Language: [Python 3.11 / Node 20]
-- Framework: [FastAPI / Next.js / ...]
-- Model access: OpenRouter · default model: [google/gemini-3.8-flash]
-- Data: [where it lives]
+- Language: Python 3.11
+- Libraries: `google-genai` (Gemini chat + embeddings), `numpy` (cosine similarity), `pytest` (tests)
+- Model access: Gemini API directly. Models come from env vars `GROUNDWORK_CHAT_MODEL` and `GROUNDWORK_EMBED_MODEL` (see `docs/INTERFACES.md` section 1)
+- Data: `data/transcripts/*.txt` and `data/transcripts/answer_key.json` at the repo root. Chunks are kept in memory only.
+
+## Layout
+```
+hw1/Goga Jintcharadze/
+  src/
+    transcript.py   ← copy of shared/transcript.py, DO NOT EDIT here
+    retrieval.py    ← chunking, embedding, cosine ranking
+    ask.py          ← CLI entry point: retrieve, abstain or answer, verify citations
+  tests/            ← pytest; unit tests use fake embeddings, no network
+  requirements.txt
+```
 
 ## How to run
+All commands run from the **repo root**.
 ```
-[install command]
-[run command]
-[test command]
+pip install -r "hw1/Goga Jintcharadze/requirements.txt"
+python "hw1/Goga Jintcharadze/src/ask.py" "What do people currently pay?"
+python -m pytest "hw1/Goga Jintcharadze/tests"
 ```
 
 ## Conventions
-- Secrets come from environment variables. Never write a key into a file.
-- Every model call reads and logs `usage`.
-- New features ship with at least one golden question in `/evals`.
+- **Follow `docs/INTERFACES.md` exactly**: transcript format, citation shape `{interview_id, line}`, inline form `[interview_NN:LNN]`, and the output JSON in section 8. Don't rename or add required fields.
+- Secrets come from environment variables (`GEMINI_API_KEY`). Never write a key into a file.
+- Every model call reads `usage` and adds it to the output's `usage` object, so cost is printed to stderr on every query.
+- JSON result goes to stdout, logs to stderr. Exit `0` on success, `1` on error.
+- When abstaining, the answer is exactly `no evidence found` and the chat model is **not called**.
+- Citations are verified **in code**: any citation in the answer that isn't one of the retrieved chunks is removed and logged to stderr. Never trust the model's citations.
+- Keep it small and readable. No frameworks, no classes where a function will do.
 
 ## You may
-- Create and edit files in `src/`, `tests/`, `docs/`
+- Create and edit files in `src/` (except `transcript.py`), `tests/` and `requirements.txt` in this folder
 - Propose dependency changes (ask before adding)
+- Propose changes to `docs/INTERFACES.md` or `shared/`, but only as a suggestion to the human. Don't edit them.
 
 ## You may not
-- Touch `.env`, CI config, or anything in `secrets/`
-- Delete tests to make them pass
-- Call paid APIs in loops without a cap
+- Touch `.env`, other people's `hw1/` folders, `shared/`, `data/`, or `docs/`
+- Delete or weaken tests to make them pass
+- Call the Gemini API in loops without a cap (embedding the 3 transcripts once per run is fine; anything more needs approval)
+- Add features listed under "Out of scope" in `spec.md`

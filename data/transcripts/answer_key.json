@@ -1,0 +1,42 @@
+{
+  "interview_01": {
+    "segment": "independent cafe owners",
+    "planted": [
+      { "type": "pain",       "line": 5,  "fact": "ran out of oat milk on Saturday, lost ~20 orders" },
+      { "type": "workaround", "line": 9,  "fact": "paper sheet on the fridge + texts supplier every Thursday" },
+      { "type": "spending",   "line": 11, "fact": "pays 45 GEL/month for a POS add-on that doesn't do inventory" },
+      { "type": "workaround", "line": 15, "fact": "sends barista to supermarket, pays retail (almost double)" }
+    ],
+    "leading_question_lines": [6, 18],
+    "unrelated_question": "What is the weather like in Batumi in winter?"
+  },
+  "interview_02": {
+    "segment": "independent bakery owners",
+    "planted": [
+      { "type": "pain",       "line": 7,  "fact": "throws away ~15% of bread most days" },
+      { "type": "workaround", "line": 11, "fact": "staff post low stock in a WhatsApp group, owner orders end of day" },
+      { "type": "spending",   "line": 13, "fact": "pays nephew 200 GEL/month to maintain the ordering spreadsheet" },
+      { "type": "pain",       "line": 17, "fact": "ran out of butter, no croissants for a whole weekend" },
+      { "type": "commitment", "line": 19, "fact": "will use the beta for two weeks and introduce two other bakery owners" }
+    ],
+    "leading_question_lines": [8, 14],
+    "unrelated_question": "Which football team won the last World Cup?"
+  },
+  "interview_03": {
+    "segment": "mobile coffee cart operators",
+    "planted": [
+      { "type": "pain",       "line": 5,  "fact": "ran out of cups at a university fair, closed early" },
+      { "type": "pain",       "line": 7,  "fact": "lost about 600 GEL in sales" },
+      { "type": "workaround", "line": 9,  "fact": "free Google Sheet on phone, often not updated" },
+      { "type": "spending",   "line": 11, "fact": "pays nothing for any tools" },
+      { "type": "workaround", "line": 15, "fact": "drives to cash-and-carry the night before, ~2 hours" }
+    ],
+    "leading_question_lines": [12, 16],
+    "unrelated_question": "How do I bake sourdough at home?"
+  },
+  "_notes": {
+    "price_question": "What do people currently pay? -> 45 GEL/month POS add-on [interview_01:L11], 200 GEL/month to nephew [interview_02:L13], nothing [interview_03:L11]",
+    "trap": "interview_03 line 19 ('would pay maybe 20 GEL') is a hypothetical opinion, NOT current spending. A good answer to the price question does not report it as something they pay.",
+    "bad_question_kinds": "01:L6 leading, 01:L18 leading, 02:L8 leading, 02:L14 pitching, 03:L12 hypothetical, 03:L16 compliment_fishing"
+  }
+}
