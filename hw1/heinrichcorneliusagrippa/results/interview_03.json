@@ -1,0 +1,52 @@
+{
+  "interview_id": "interview_03",
+  "evidence": [
+    {
+      "id": "interview_03-e1",
+      "type": "pain",
+      "summary": "Ran out of cups and had to close early, losing 600 GEL in sales.",
+      "quote": "We ran out of cups after three hours and had to close early.",
+      "citation": {
+        "interview_id": "interview_03",
+        "line": 5
+      },
+      "match_score": 100.0
+    },
+    {
+      "id": "interview_03-e2",
+      "type": "workaround",
+      "summary": "Uses a free Google Sheet on a phone to track supplies.",
+      "quote": "A free Google Sheet on my phone, but I forget to update it when it is busy.",
+      "citation": {
+        "interview_id": "interview_03",
+        "line": 9
+      },
+      "match_score": 100.0
+    },
+    {
+      "id": "interview_03-e3",
+      "type": "spending",
+      "summary": "Does not pay for any software or services for stock.",
+      "quote": "No, nothing. I do not pay for any tools, money is tight with a cart.",
+      "citation": {
+        "interview_id": "interview_03",
+        "line": 11
+      },
+      "match_score": 100.0
+    }
+  ],
+  "rejected": [],
+  "stats": {
+    "extracted": 3,
+    "accepted": 3,
+    "rejected": 0,
+    "attempts": 1
+  },
+  "usage": {
+    "model": "gemini-3.5-flash-lite",
+    "calls": 1,
+    "input_tokens": 556,
+    "output_tokens": 186,
+    "cost_usd": 0.000632
+  }
+}

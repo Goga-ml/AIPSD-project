@@ -1,0 +1,63 @@
+{
+  "interview_id": "interview_01",
+  "evidence": [
+    {
+      "id": "interview_01-e1",
+      "type": "pain",
+      "summary": "Ran out of oat milk on Saturday and lost about twenty orders.",
+      "quote": "Last Saturday we ran out of oat milk by 11, lost maybe twenty orders.",
+      "citation": {
+        "interview_id": "interview_01",
+        "line": 5
+      },
+      "match_score": 100.0
+    },
+    {
+      "id": "interview_01-e2",
+      "type": "workaround",
+      "summary": "Tracks stock on a paper sheet and texts the supplier weekly.",
+      "quote": "A paper sheet on the fridge, and I text my supplier every Thursday.",
+      "citation": {
+        "interview_id": "interview_01",
+        "line": 9
+      },
+      "match_score": 100.0
+    },
+    {
+      "id": "interview_01-e3",
+      "type": "spending",
+      "summary": "Pays 45 GEL a month for a POS add-on that does not track inventory.",
+      "quote": "We pay 45 GEL a month for a POS add-on, but it doesn't do inventory.",
+      "citation": {
+        "interview_id": "interview_01",
+        "line": 11
+      },
+      "match_score": 100.0
+    },
+    {
+      "id": "interview_01-e4",
+      "type": "workaround",
+      "summary": "Sent the barista to the supermarket to buy ingredients at retail price.",
+      "quote": "I sent my barista to the supermarket and we paid retail, almost double the supplier price.",
+      "citation": {
+        "interview_id": "interview_01",
+        "line": 15
+      },
+      "match_score": 100.0
+    }
+  ],
+  "rejected": [],
+  "stats": {
+    "extracted": 4,
+    "accepted": 4,
+    "rejected": 0,
+    "attempts": 1
+  },
+  "usage": {
+    "model": "gemini-3.5-flash-lite",
+    "calls": 1,
+    "input_tokens": 564,
+    "output_tokens": 249,
+    "cost_usd": 0.000792
+  }
+}
