@@ -1,15 +1,17 @@
-"""LLM providers behind one interface: an async generator that yields text chunks.
+"""Every model call goes through here: providers behind one interface, an async generator that yields text chunks.
 
     async for chunk in provider(system_prompt, hypothesis, usage): ...
 
-`usage` is filled in when the stream ends. Failures raise ProviderError with a message
-that is safe to show to the founder (never the key, never a stack trace).
+`usage` is filled in when the stream ends, and log_usage() writes its tokens, cost and latency
+to stderr. Failures raise ProviderError with a message that is safe to show to the founder
+(never the key, never a stack trace).
 """
 
 import asyncio
 import json
 import os
 import re
+import sys
 from dataclasses import dataclass
 from typing import AsyncIterator, Callable
 
@@ -53,6 +55,18 @@ class Usage:
 
 
 Provider = Callable[[str, str, Usage], AsyncIterator[str]]
+
+
+def log_usage(usage: Usage, outcome: str, verdict: str | None, seconds: float) -> None:
+    """One stderr line per request: model, outcome, verdict, tokens, cost and latency."""
+    cost = usage.cost_usd()
+    cost_text = f"${cost:.6f}" if cost is not None else "unknown (no price for this model)"
+    print(
+        f"lint: model={usage.model} outcome={outcome} verdict={verdict} "
+        f"in={usage.input_tokens} out={usage.output_tokens} cost={cost_text} time={seconds:.2f}s",
+        file=sys.stderr,
+        flush=True,
+    )
 
 
 async def stream_mock(system: str, hypothesis: str, usage: Usage) -> AsyncIterator[str]:

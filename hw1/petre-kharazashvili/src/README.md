@@ -30,7 +30,7 @@ Open http://localhost:8000, or stream from the terminal:
 ```
 curl -N -X POST localhost:8000/lint -H 'content-type: application/json' -d '{"hypothesis": "Farmers want better tools"}'
 ```
-Every request logs one line to stderr: model, outcome, verdict, tokens and cost.
+Every request logs one line to stderr from `llm.py`: model, outcome, verdict, tokens, cost and latency.
 
 ## Test
 ```

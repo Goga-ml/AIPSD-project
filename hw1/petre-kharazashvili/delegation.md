@@ -1,6 +1,8 @@
 # Delegation log · Hypothesis Linter
 
-**Delegated to AI (Claude Code, Opus 5.5):** almost everything. That includes the spec and AGENTS.md drafts, checking the Gemini docs and SDK, all of `src/` and its 29 tests, the curl checks, the golden runs, and this draft. I made the decisions at each checkpoint.
+**Date:** 2026-10-15 (submission fixes 2026-10-20) · **Rung on the Autonomy Ladder:** 3. The agent planned and wrote code across files; I approved the plan and made the decisions at each checkpoint. I verified mostly through gates (tests, live golden runs, a browser check) rather than reading every line of the diff, which the course calls a slide toward rung 4. Reading `parser.py` and `prompt.txt` myself is still on the list below.
+
+**Delegated to AI (Claude Code, Opus 5.5):** almost everything. That includes the spec and AGENTS.md drafts, checking the Gemini docs and SDK, all of `src/` and its 31 tests, the curl checks, the golden runs, and this draft. I made the decisions at each checkpoint.
 
 | What came back wrong | Caught by | Fix |
 |---|---|---|
@@ -10,6 +12,7 @@
 | A bad key showed raw JSON (it assumed 401; Gemini actually returns 400) | A live run with a fake key | Mapping fixed and tested |
 | **A 429 hung the page:** the SDK slept for `Retry-After` ~8.7 h, and two fixes guessed from the docstring failed. Also, `thinking_level: "minimal"` was rejected by the model | An HTTP trace, then reading the SDK source | Retry only 503, a 30 s cap, `"low"` |
 | G1 and G2 are the prompt's own few-shots (G1 was copied word for word); the latency target was missed (4.6 to 26.6 s) | Reading the golden output | Documented in golden.md, not fixed |
+| Submitting: the agent rebased my commits and pushed them straight to `main`, but the brief says to merge through a pull request. The rebase also left golden.md citing a commit hash that no longer existed | A teammate's review against the brief's checklist (2026-10-20) | These fixes go in through the PR `HW1 · petre-kharazashvili`; hash corrected |
 
 **Lesson:** every Gemini bug surfaced only in live runs, because the tests use mocks. The first test run was 27/27 green; breaking the code on purpose showed that one test checked less than it seemed to. I checked the page in a browser myself (mock provider): the badge, reason and rewrite render correctly. My first Stop click came too late (the ~1 s stream had finished: "Done."); on the second try, Stop froze the reason mid-word with "Stopped." and no rewrite.
 

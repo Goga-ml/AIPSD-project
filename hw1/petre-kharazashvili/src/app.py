@@ -1,6 +1,5 @@
 """Hypothesis linter: GET / serves the form, POST /lint streams VERDICT / REASON / REWRITE (INTERFACES.md section 9)."""
 
-import sys
 import time
 from contextlib import aclosing
 from pathlib import Path
@@ -13,17 +12,13 @@ from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
 HERE = Path(__file__).parent
 load_dotenv(HERE / ".env")  # variables already set in the environment win
 
+from llm import Provider, ProviderError, Usage, get_provider, log_usage  # noqa: E402
 from parser import LintParser, ParseError  # noqa: E402
-from providers import Provider, ProviderError, Usage, get_provider  # noqa: E402
 
 MAX_CHARS = 500
 SYSTEM_PROMPT = (HERE / "prompt.txt").read_text(encoding="utf-8")
 
 app = FastAPI(title="Groundwork hypothesis linter")
-
-
-def log(message: str) -> None:
-    print(message, file=sys.stderr, flush=True)
 
 
 def error_response(status: int, message: str) -> PlainTextResponse:
@@ -84,13 +79,7 @@ async def lint_stream(provider: Provider, hypothesis: str, usage: Usage) -> Asyn
         outcome = f"error: {e}"
         raise
     finally:
-        cost = usage.cost_usd()
-        cost_text = f"${cost:.6f}" if cost is not None else "unknown (no price for this model)"
-        log(
-            f"lint: model={usage.model} outcome={outcome} verdict={parser.verdict} "
-            f"in={usage.input_tokens} out={usage.output_tokens} cost={cost_text} "
-            f"time={time.monotonic() - started:.2f}s"
-        )
+        log_usage(usage, outcome, parser.verdict, time.monotonic() - started)
 
 
 async def with_error_line(first: str, rest: AsyncIterator[str]) -> AsyncIterator[str]:

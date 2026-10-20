@@ -33,6 +33,6 @@
 4. **Browser check (by me, 2026-10-15, mock provider):** the badge, reason and rewrite render correctly. Stop: my first click came after the ~1 s mock stream had finished (status "Done."); on the second try, the page showed "Stopped." with the reason frozen mid-word ("...there is no thresho") and no rewrite. Stop is also covered by tests and curl (`src/tests/test_app.py`; the server log shows `stopped early (client disconnected)`).
 
 ## Before these runs: failures found and fixed
-- **Hang on 429:** the SDK's default retry slept for Gemini's `Retry-After: 31443` (~8.7 h). Fixed in `5e2ac98`: never retry 429, and a 30 s cap. The page now shows Google's message ("...20 requests per day...retry in 8h42m17s") in about 1 s.
-- **`thinking_level: "minimal"`** was rejected by the model (400). Changed to `"low"` in `5e2ac98`.
+- **Hang on 429:** the SDK's default retry slept for Gemini's `Retry-After: 31443` (~8.7 h). Fixed in `32f9056`: never retry 429, and a 30 s cap. The page now shows Google's message ("...20 requests per day...retry in 8h42m17s") in about 1 s.
+- **`thinking_level: "minimal"`** was rejected by the model (400). Changed to `"low"` in `32f9056`.
 - These attempts were all rejected by the API (429/400), so none were billed or produced output.

@@ -2,6 +2,8 @@
 
 *HW1 · Petre Kharazashvili · Task 2 of the Groundwork capstone. Wire format follows `docs/INTERFACES.md` v1, section 9. Course topic: streaming responses.*
 
+**Run from a fresh clone, at the repo root:** `python3.11 -m venv .venv && .venv/bin/pip install -r hw1/petre-kharazashvili/src/requirements.txt` · **Test** (mock provider, no key): `.venv/bin/pytest hw1/petre-kharazashvili` · **Try it:** `LLM_PROVIDER=mock .venv/bin/uvicorn app:app --app-dir hw1/petre-kharazashvili/src --port 8000`, then open http://localhost:8000. For the real model, set `LLM_PROVIDER=gemini` and `GEMINI_API_KEY`.
+
 ## Problem
 Founders write hypotheses like "Farmers want better tools". Nothing can prove that wrong, so every interview seems to confirm it. They need to know *before* interviewing whether a hypothesis is testable, and what a testable version would look like.
 
@@ -19,7 +21,7 @@ A single-page web form. The founder types a hypothesis and the server streams ba
 - **Rewrites** keep the founder's intent. Specifics the founder must confirm go in `[square brackets]`.
 - **Wire format (INTERFACES §9):** `GET /` serves the form. `POST /lint` takes `{"hypothesis": "..."}` and streams `text/plain` lines: `VERDICT: falsifiable|vague`, `REASON: ...`, `REWRITE: ...`. The model writes `REWRITE: UNCHANGED` for a passing hypothesis, and an incremental parser on the server replaces it with the exact input, so "unchanged" is guaranteed in code.
 - **Stack:** Python 3.11, FastAPI `StreamingResponse`, one static HTML page (vanilla JS, inline CSS) that reads the stream with `fetch` + `ReadableStream`.
-- **Providers:** `LLM_PROVIDER=gemini|ollama|mock` selects one async-generator interface that yields text chunks. Gemini: `GEMINI_API_KEY`, `GROUNDWORK_CHAT_MODEL`, minimal thinking (Gemini 3.6+ ignores temperature). Ollama: `OLLAMA_URL`, `OLLAMA_MODEL`, temperature 0.1. Mock: a canned answer with small delays. Output capped at 300 tokens. The key stays server-side (env var or gitignored `.env`), and the repo ships `.env.example`.
+- **Providers (`src/llm.py`, the only place a model is called):** `LLM_PROVIDER=gemini|ollama|mock` selects one async-generator interface that yields text chunks. Gemini: `GEMINI_API_KEY`, `GROUNDWORK_CHAT_MODEL`, minimal thinking (Gemini 3.6+ ignores temperature). Ollama: `OLLAMA_URL`, `OLLAMA_MODEL`, temperature 0.1. Mock: a canned answer with small delays. Output capped at 300 tokens. The key stays server-side (env var or gitignored `.env`), and the repo ships `.env.example`.
 
 ## Context list
 | What the model sees | Where it comes from |
