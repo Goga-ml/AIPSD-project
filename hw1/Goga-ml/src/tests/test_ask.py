@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from ask import ABSTAIN, answer_question, verify_citations
+from llm import Usage
 from retrieval import load_chunks, rank
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
@@ -95,3 +96,13 @@ def test_model_saying_no_evidence_is_an_abstain(corpus):
     result = answer_question("What do people pay per month in GEL?", chunks, vecs, fake_embed, model, min_score=0.5)
     assert result["answer"] == ABSTAIN
     assert result["abstained"] is True
+
+
+def test_usage_sums_tokens_cost_and_latency():
+    usage = Usage()
+    usage.add("embed", 1000, 0, 0.2, price_in=0.15)
+    usage.add("chat", 500, 100, 1.5, price_in=0.75, price_out=3.75)
+    d = usage.as_dict()
+    assert (d["calls"], d["input_tokens"], d["output_tokens"]) == (2, 1500, 100)
+    assert d["cost_usd"] == pytest.approx((1000 * 0.15 + 500 * 0.75 + 100 * 3.75) / 1_000_000)
+    assert d["latency_ms"] == 1700
