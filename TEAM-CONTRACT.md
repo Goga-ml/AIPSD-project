@@ -28,7 +28,7 @@ Step 1: name it inside the team within 48 hours. Step 2: if unresolved in one we
 
 Signed (a commit from each member on this file counts as a signature).
 
-- [ ] Goga Jintcharadze
+- [x] Goga Jintcharadze
 - [ ] Petre Kharazashvili
 - [ ] Otar Khunashvili
 - [x] Dachi Khelashvili
