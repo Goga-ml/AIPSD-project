@@ -21,8 +21,11 @@
 - **Caught by:** the first real run on my own machine. The 15 offline tests passed because none of them simulated an API error or a Windows-encoded file.
 - **Decision:** `llm.py` now turns any Gemini `APIError` into one clean line, `error: Gemini API error 429 RESOURCE_EXHAUSTED: ...` with exit 1. `check_planted.py` reads UTF-16 or UTF-8 and reports an empty file as a clear error. Added 3 tests; the 429 test fails on the old `llm.py` and passes on the new one. 18 passed.
 
-### Entry 2 · My own review  *(fill in yourself, Dachi; do not leave this generated)*
-- **What I read in the diff:**
-- **What I ran myself, and the output:**
-- **What I changed or rejected:**
-- **What the first real Gemini run got wrong (golden Q1/Q2):**
+### Entry 2 · My own review (Dachi)
+- **How I worked with the agent:** rung 3. I had it show me every file and the full list of changes before anything was pushed, I asked to see what it had written in specific files, and I asked how to check the work myself before I approved it. I went with Task 1 (Task 4 was already Goga's) and chose my GitHub username as the folder name, to match the course spec and Goga's layout, instead of my full name.
+- **What I ran myself, and the output:** on my own Windows machine (PowerShell, Python 3.14): `pytest hw1/heinrichcorneliusagrippa` gave 18 passed. The live run on the three shared transcripts gave accepted 4 / 6 / 3, rejected 0, one attempt each, and `check_planted.py` printed `recovered 12/14` (both misses in interview_03). The total cost was $0.00255.
+- **What came back wrong, and how I caught it:**
+  1. The first live run failed: the free-tier quota for `gemini-3.8-flash` (20 requests a day) was already used up. The tool crashed with a full traceback instead of a clean error, and the empty result files then crashed `check_planted.py`, which also couldn't read PowerShell's UTF-16 output. None of this was covered by the offline tests; I caught it only by running the tool myself. It was fixed in `ff0d786`, with 3 new tests.
+  2. Setup problems: `pip install` hung on a download and reported a broken cache (fixed with `pip cache purge` and `--timeout`). A fine-grained GitHub token could not push to Goga's repo (403), and a classic token without the `public_repo` scope failed too. In the end I pushed from my own shell with my normal GitHub login.
+- **What I decided:** I ran the live golden questions with `gemini-3.5-flash-lite`, which has its own free quota, and wrote that down in `golden.md`. I kept Q2 as a documented failure (12/14) instead of changing the prompt until it passed on the same transcripts.
+- **Lesson:** the offline tests proved the logic, but only a real run on my own machine found the quota error, the Windows encoding problem and the recall gap.
