@@ -30,5 +30,5 @@ Signed (a commit from each member on this file counts as a signature).
 
 - [ ] Goga Jintcharadze
 - [ ] Petre Kharazashvili
-- [ ] Otar Khunashvili
+- [x] Otar Khunashvili
 - [x] Dachi Khelashvili
