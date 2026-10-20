@@ -7,6 +7,7 @@ The classifier is provider-neutral: it takes any `call_model(prompt) -> str`.
 import json
 import re
 import sys
+import time
 from typing import Callable
 
 from transcript import Turn
@@ -15,6 +16,7 @@ LABELS = ("good", "leading", "hypothetical", "pitching", "compliment_fishing")
 # Most severe first; the primary `label` is the first of these found in `labels`.
 SEVERITY = ("leading", "pitching", "compliment_fishing", "hypothetical", "good")
 MAX_ATTEMPTS = 3
+RETRY_DELAY_S = 2.0  # waits 2 s, then 4 s, so a 503 "high demand" spike can pass; tests set it to 0
 
 RUBRIC = """You review the questions a founder asked in a customer-discovery interview.
 Label each question with one or more of these labels:
@@ -120,6 +122,8 @@ def classify(questions: list[Turn], call_model: Callable[[str], str]) -> tuple[l
             break
         except Exception as exc:  # invalid output and API errors both count as a failed attempt
             print(f"classify: attempt {attempt}/{MAX_ATTEMPTS} failed: {exc}", file=sys.stderr)
+            if attempt < MAX_ATTEMPTS:
+                time.sleep(RETRY_DELAY_S * attempt)
 
     entries = []
     for q in questions:

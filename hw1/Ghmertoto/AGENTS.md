@@ -13,7 +13,7 @@ Groundwork is a privacy-first, open-source customer discovery tool for early-sta
 ## Layout (`src/`)
 | File | Kind | Job |
 |---|---|---|
-| `transcript.py` | deterministic | Shared parser, copied **unchanged** from INTERFACES §4. Do not edit here; fix `shared/` and copy again. |
+| `transcript.py` | deterministic | Shared parser, a byte-for-byte copy of `shared/transcript.py`. Do not edit here; fix `shared/` and copy again. |
 | `talk_ratio.py` | deterministic | Word counts per speaker and `interviewer_share`. |
 | `classifier.py` | LLM boundary | Builds the prompt, validates the model JSON, retries (3 attempts), marks failures `unclassified`. Takes any `call_model(prompt) -> str`. |
 | `llm.py` | LLM provider | Gemini call; logs tokens, cost and latency to stderr; keeps the `usage` totals. |
@@ -21,19 +21,20 @@ Groundwork is a privacy-first, open-source customer discovery tool for early-sta
 | `golden.py` | live check | Runs the golden transcripts against the real model and compares with `answer_key.json`. Not a test. |
 | `tests/` | pytest | Unit tests plus fixtures (`tests/fixtures/*.txt`, `answer_key.json`). |
 
-## How to run (from the repo root; quote the path, it has a space)
+## How to run (from the repo root)
 ```
-pip install -r "hw1/Otar Khunashvili/src/requirements.txt"
-python "hw1/Otar Khunashvili/src/coach.py" "hw1/Otar Khunashvili/src/tests/fixtures/interview_01.txt" --format md
-python "hw1/Otar Khunashvili/src/coach.py" <transcript.txt> --no-llm      # offline, talk ratio only
-pytest "hw1/Otar Khunashvili"                                              # no API key needed
-python "hw1/Otar Khunashvili/src/golden.py"                                # live model, needs GEMINI_API_KEY
+pip install -r hw1/Ghmertoto/src/requirements.txt
+python hw1/Ghmertoto/src/coach.py hw1/Ghmertoto/src/tests/fixtures/interview_01.txt --format md
+python hw1/Ghmertoto/src/coach.py <transcript.txt> --no-llm      # offline, talk ratio only
+pytest hw1/Ghmertoto                                              # no API key needed
+python hw1/Ghmertoto/src/golden.py                                # live model, needs GEMINI_API_KEY
 ```
 
 ## Configuration (environment only)
 - `GEMINI_API_KEY`: required for model calls. **Never hardcode it, never write it to a file, never commit `.env`.**
-- `GROUNDWORK_CHAT_MODEL`: default `gemini-2.5-flash`.
-- `GROUNDWORK_PRICE_IN`, `GROUNDWORK_PRICE_OUT`: USD per 1M tokens, defaults `0.30` and `2.50`. These are **assumptions** (see `spec.md` G) until the team fills INTERFACES §1.
+- `GROUNDWORK_CHAT_MODEL`: default `gemini-3.8-flash`. (`gemini-2.5-flash` returned 404 "no longer available to new users" on 2026-10-15.)
+- `GROUNDWORK_PRICE_IN`, `GROUNDWORK_PRICE_OUT`: USD per 1M tokens, defaults `0.75` and `3.75`. These are the Gemini 3.8 Flash introductory prices, checked 2026-10-15 on ai.google.dev/gemini-api/docs/pricing. They become $1.50 / $7.50 on 2027-01-01.
+- A 401, 403, 404 or 429 from the API (bad key, unknown model, exhausted quota) is not retried. Other errors, such as a 503, get 3 attempts with a 2 s / 4 s wait. A free-tier key allows about 5 requests per minute and 20 per day for this model.
 
 ## Input and output
 - Input: one transcript in the INTERFACES §3 format (`Interviewer: ` / `Customer: ` lines, optional `# key: value` headers, blank lines allowed).
@@ -53,4 +54,4 @@ python "hw1/Otar Khunashvili/src/golden.py"                                # liv
 ## You may not
 - Delete, skip or weaken tests to make them pass.
 - Call the real model from a test, or in a loop without the 3-attempt cap.
-- Edit files outside `hw1/Otar Khunashvili/` (shared files change through a PR, INTERFACES §11).
+- Edit files outside `hw1/Ghmertoto/` (shared files change through a PR, INTERFACES §11).

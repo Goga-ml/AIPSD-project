@@ -2,7 +2,7 @@
 
 Every call logs tokens, cost and latency to stderr (never the prompt text) and adds
 to `usage`, which coach.py puts in its output (INTERFACES section 5).
-Prices are assumptions until INTERFACES section 1 is filled; override them by env.
+Prices default to Gemini 3.8 Flash list prices; override them by env.
 """
 
 import os
@@ -18,9 +18,11 @@ class LLMConfigError(ModelUnavailable):
 
 class GeminiClient:
     def __init__(self) -> None:
-        self.model = os.environ.get("GROUNDWORK_CHAT_MODEL", "gemini-2.5-flash")
-        self.price_in = float(os.environ.get("GROUNDWORK_PRICE_IN", "0.30"))    # USD per 1M tokens
-        self.price_out = float(os.environ.get("GROUNDWORK_PRICE_OUT", "2.50"))  # USD per 1M tokens
+        # Defaults: Gemini 3.8 Flash introductory prices (ai.google.dev/gemini-api/docs/pricing,
+        # checked 2026-10-15; they double on 2027-01-01). Output price covers thinking tokens.
+        self.model = os.environ.get("GROUNDWORK_CHAT_MODEL", "gemini-3.8-flash")
+        self.price_in = float(os.environ.get("GROUNDWORK_PRICE_IN", "0.75"))    # USD per 1M tokens
+        self.price_out = float(os.environ.get("GROUNDWORK_PRICE_OUT", "3.75"))  # USD per 1M tokens
         self.usage = {"model": self.model, "calls": 0, "input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0}
         self._client = None
 
@@ -34,19 +36,22 @@ class GeminiClient:
         return self._client
 
     def generate(self, prompt: str) -> str:
-        from google.genai import types
+        from google.genai import errors, types
 
         client = self._connect()
         start = time.perf_counter()
-        response = client.models.generate_content(
-            model=self.model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=0,
-                response_mime_type="application/json",
-                thinking_config=types.ThinkingConfig(thinking_budget=0),  # predictable cost
-            ),
-        )
+        try:
+            response = client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=types.GenerateContentConfig(temperature=0, response_mime_type="application/json"),
+            )
+        except errors.ClientError as exc:
+            # Bad key, unknown model or exhausted quota: a retry seconds later cannot help.
+            if exc.code in (401, 403, 404, 429):
+                raise LLMConfigError(f"{exc.code} for model {self.model}: check GEMINI_API_KEY, "
+                                     "GROUNDWORK_CHAT_MODEL and your quota") from exc
+            raise
         latency_ms = (time.perf_counter() - start) * 1000
 
         meta = response.usage_metadata
