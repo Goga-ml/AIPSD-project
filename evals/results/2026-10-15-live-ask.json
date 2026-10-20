@@ -1,0 +1,44 @@
+{
+  "golden_set": "evals/golden.yaml",
+  "date": "2026-10-15",
+  "models": {"chat": "gemini-3.8-flash", "embed": "gemini-embedding-001"},
+  "settings": {"min_score": 0.65, "k": 5},
+  "how_compiled": "By hand from the live runs recorded in hw1/Goga-ml/golden.md. There is no runner script yet (planned: evals/run_golden.py). The runs did not keep the retrieved list for every question.",
+  "items": [
+    {
+      "id": "g1",
+      "status": "fail",
+      "answer": "One customer pays 45 GEL a month for a POS add-on [interview_01:L11]. Another customer pays their nephew 200 GEL a month to keep the ordering spreadsheet up to date [interview_02:L13].",
+      "citations": ["interview_01:L11", "interview_02:L13"],
+      "best_score": 0.704,
+      "reason": "must_cite interview_03:L11 ('pays nothing') missing. must_mention and must_not_mention pass: the 20 GEL trap was not reported. Same answer in 2 runs."
+    },
+    {
+      "id": "g2",
+      "status": "pass",
+      "citations": ["interview_01:L5", "interview_02:L17"],
+      "best_score": 0.708,
+      "reason": "Both required citations present and in retrieved. Full answer text was not recorded in golden.md."
+    },
+    {
+      "id": "g3",
+      "status": "not_run",
+      "reason": "Free-tier quota for gemini-3.8-flash (20 requests/day) used up on 15 Oct."
+    },
+    {
+      "id": "g4",
+      "status": "not_run",
+      "reason": "Free-tier quota for gemini-3.8-flash (20 requests/day) used up on 15 Oct."
+    },
+    {
+      "id": "g5",
+      "status": "pass",
+      "answer": "no evidence found",
+      "abstained": true,
+      "citations": [],
+      "best_score": 0.590,
+      "chat_calls": 0
+    }
+  ],
+  "summary": {"run": 3, "passed": 2, "pass_rate_of_run": 0.67, "pass_rate_overall": 0.40, "threshold": 0.70, "gate": "below threshold"}
+}
