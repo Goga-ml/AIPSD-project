@@ -18,7 +18,7 @@ hw1/petre-kharazashvili/
   spec.md · golden.md · delegation.md · journal.md · AGENTS.md
   src/
     app.py            ← FastAPI app: GET /, POST /lint
-    providers.py      ← gemini / ollama / mock, one async-generator interface
+    llm.py            ← every model call: gemini / ollama / mock behind one interface, logs tokens, cost, latency
     parser.py         ← incremental parser for the VERDICT/REASON/REWRITE format
     prompt.txt        ← system prompt with the rubric and few-shot examples
     static/index.html ← the form

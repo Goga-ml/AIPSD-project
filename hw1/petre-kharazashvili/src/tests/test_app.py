@@ -7,7 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import app as app_module
-from providers import ProviderError
+from llm import ProviderError
 
 client = TestClient(app_module.app)
 COFFEE = (
@@ -151,7 +151,7 @@ def test_index_serves_the_form():
 
 def test_gemini_bad_key_error_is_readable():
     # Seen live: Gemini answers a bad key with HTTP 400 and a JSON blob, not 401.
-    from providers import _gemini_message
+    from llm import _gemini_message
 
     class FakeGenAiError(Exception):
         status_code = 400
@@ -162,7 +162,7 @@ def test_gemini_bad_key_error_is_readable():
 
 def test_gemini_quota_error_keeps_googles_sentence_and_drops_the_json():
     # Seen live on the free tier.
-    from providers import _gemini_message
+    from llm import _gemini_message
 
     class FakeGenAiError(Exception):
         status_code = 429
