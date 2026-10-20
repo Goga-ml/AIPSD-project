@@ -1,4 +1,4 @@
-# AGENTS.md · Groundwork · Interview Technique Coach (HW1, Otar Khunashvili)
+# AGENTS.md · Groundwork · Interview Technique Coach (HW1, Ghmertoto)
 
 *Instructions for AI coding agents working in this folder. Read `spec.md` first; it is the contract. Shared formats come from `docs/INTERFACES.md` v1.*
 
