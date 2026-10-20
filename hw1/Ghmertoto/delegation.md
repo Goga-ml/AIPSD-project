@@ -17,7 +17,8 @@
 - **Result:** interview_01 passed in 3 of 4 runs, interview_02 in 1 of 4; the rest were provider overload or free-tier quota, not wrong labels (see `golden.md`).
 
 ### Entry 5 · Journal
-- **Task:** Otar asked the agent to write `journal.md` itself. **Came back:** entries built only from events in this log and `golden.md`. **Limit:** they are the agent's draft of Otar's reflection; no personal activity is claimed beyond choosing the repo and folder, approving the spec, creating the key and requesting the reviews above.
+- **Task:** Otar asked the agent to write `journal.md` itself. **Came back:** entries built only from events in this log and `golden.md`. **Limit:** they are the agent's draft of Otar's reflection; beyond the checks in the last section, no personal activity is claimed beyond choosing the repo and folder, approving the spec, creating the key and requesting the reviews above.
 
-### Checks not recorded
-- A personal read-through of the code diff and a personal run of `pytest hw1/Ghmertoto` by Otar are **not** recorded here. All 28 tests were run by the agent: in this checkout, in a fresh clone with a new virtual environment (28 passed), and across the repo with Goga's folder (35 passed).
+### Human verification
+- **Otar** reports (told to the agent in chat on 20 October 2026) that he read the code diff and verified the work. The agent has no record of which commands he ran, so none are claimed here.
+- **Run by the agent:** all 28 tests, in this checkout, in a fresh clone with a new virtual environment (28 passed), and across the repo together with Goga's folder (35 passed).
