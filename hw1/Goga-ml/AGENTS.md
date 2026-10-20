@@ -19,6 +19,7 @@ hw1/Goga-ml/
     transcript.py     ← copy of shared/transcript.py, DO NOT EDIT here
     retrieval.py      ← chunking, embedding, cosine ranking
     ask.py            ← CLI entry point: retrieve, abstain or answer, verify citations
+    llm.py            ← every Gemini call: client, embedding cache, tokens/cost/latency logging
     requirements.txt
     tests/            ← pytest; unit tests use fake embeddings, no network
 ```
@@ -34,7 +35,7 @@ python -m pytest hw1/Goga-ml
 ## Conventions
 - **Follow `docs/INTERFACES.md` exactly**: transcript format, citation shape `{interview_id, line}`, inline form `[interview_NN:LNN]`, and the output JSON in section 8. Don't rename or add required fields.
 - Secrets come from environment variables (`GEMINI_API_KEY`). Never write a key into a file.
-- Every model call reads `usage` and adds it to the output's `usage` object, so cost is printed to stderr on every query.
+- Every model call goes through `llm.py`, which adds its tokens, cost and latency to the output's `usage` object and prints them to stderr.
 - JSON result goes to stdout, logs to stderr. Exit `0` on success, `1` on error.
 - When abstaining, the answer is exactly `no evidence found` and the chat model is **not called**.
 - Citations are verified **in code**: any citation in the answer that isn't one of the retrieved chunks is removed and logged to stderr. Never trust the model's citations.
