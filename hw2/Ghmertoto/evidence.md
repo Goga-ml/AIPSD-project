@@ -38,7 +38,7 @@ Actual results are pasted from a run of every case through `call_tool()` on 27 N
 
 *The same weakening run locally: 2 failed, 59 passed.*
 
-**What the red run taught me.** I thought `extra="forbid"` was the main lock, so I expected that taking it off would break every attack case. Only one broke. t5 (the path) and t7 (the instruction after the id) stayed green, because the id pattern stops them. t8 (the visitor) stayed green, because `tools_for()` never offers the tool to someone who is not signed in. Only t6, the other founder's name in the arguments, needs `extra="forbid"`. The failed test even shows what would have happened: the call "should be refused but ran" and gave back the numbers of `interview_01`. So each rule covers one attack, and if I delete a case I lose the only test for that rule.
+**What the red run taught me.** Before the run I could not have said which of my four attack cases depends on which rule. `extra="forbid"` looks like the main lock, so taking it off looks like it should break all of them. Only one broke. t5 (the path) and t7 (the instruction after the id) stayed green, because the id pattern stops them. t8 (the visitor) stayed green, because `tools_for()` never offers the tool to someone who is not signed in. Only t6, the other founder's name in the arguments, needs `extra="forbid"`. The failed test even shows what would have happened: the call "should be refused but ran" and gave back the numbers of `interview_01`. So each rule covers one attack, and if I delete a case I lose the only test for that rule.
 
 The second thing was about the run itself. My first red pull request was not really blocked by the gate. `main` had moved while it was open, GitHub showed conflicts, and the `pull_request` run did not even start (only the `push` run was red, https://github.com/Goga-ml/AIPSD-project/actions/runs/46037646279). A pull request that cannot merge because of conflicts says nothing about the gate. I rebuilt the branch as `main` plus the one line. After that the pull request was mergeable, the required check failed, and the state was `BLOCKED`. A red run only counts as evidence when the failed check is the only thing in the way.
 
@@ -50,7 +50,7 @@ That is 61 dots, one per passed test. CI runs `pytest -q tests` and `pytest.ini`
 
 **Through the MCP door.**
 - Client: Claude Code 2.1.196 (model `claude-sonnet-4-6`), with the server added by
-  `claude mcp add --env GROUNDWORK_FOUNDER=founder-1 --transport stdio aipsd -- python -m src.mcp_server`
+  `claude mcp add --env GROUNDWORK_FOUNDER=founder-1 --transport stdio aipsd -- <the repo's .venv python> -m src.mcp_server`
   (`claude mcp list` showed `aipsd ... ✔ Connected`). The question was sent from the terminal with `claude -p`, by the Claude Code session I used for this homework.
 - The sentence: "What is the talk ratio in interview_02? Who talked more, the interviewer or the customer?"
 - The tool calls it made, in order:
