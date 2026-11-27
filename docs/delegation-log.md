@@ -56,3 +56,13 @@ One entry per team-level delegation that mattered. Feature-level delegations are
 - **Review rule:** Otar reviews every line of the diff before a pull request is opened, and nothing is merged that he cannot explain line by line.
 - **AGENTS.md change:** none.
 - **Cost:** one session.
+
+### Entry 6 · The `verify_quote` tool (HW2 · heinrichcorneliusagrippa)
+- **Task:** issue #30: `VerifyQuote` in `src/contracts.py`, `verify_quote` in `src/tools.py`, the Task 1 check copied into `src/verify.py`, the MCP registration, `evals/tools/heinrichcorneliusagrippa.yaml`, `tests/test_verify_quote.py`, its section in `docs/tool-contracts.md` and my journal for Weeks 5 to 8.
+- **Delegated to:** Claude (Claude Opus 5.5), driven by Dachi. Context: `hw1/heinrichcorneliusagrippa/` (the HW1 check, journal and delegation log), `Lab-5/HOMEWORK.md`, `Lab-8/templates/hw2-writeup.md`, `docs/INTERFACES.md` section 6, and the tools and MCP server already on `main`.
+- **Plan check:** a first draft was built on the Task 2 branch and shown to me before anything was pushed; it was then rebuilt on `main` after #18, #21 and #23 merged, keeping Otar's `[0-9]` id pattern.
+- **Came back wrong:** nothing failed, so it was checked by breaking it: removing the length guard in `src/verify.py` fails only golden `a1` (the padded quote); dropping `extra="forbid"` fails `a2`; removing the quote pattern fails `b1`. One honest limit: the contract cannot tell a real quote from a padded one; only the guard in `verify.py` does.
+- **Caught by:** `pytest` (76 passed) and the three mutations above.
+- **Decision:** product pull request; the red run follows on a throwaway branch.
+- **AGENTS.md change:** none. New dependency `rapidfuzz>=3.0` (Ask first): it is the library INTERFACES section 6 already names for Task 1.
+- **Cost:** one session, no model calls (every test is offline).
