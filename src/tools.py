@@ -8,6 +8,7 @@ Nothing here writes, sends or deletes.
 """
 import hashlib
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Literal
@@ -17,7 +18,7 @@ from pydantic import BaseModel
 from shared.transcript import parse_transcript
 
 from . import coach
-from .contracts import Contract, GetTranscript, TalkRatio
+from .contracts import CheckRewrite, Contract, GetTranscript, TalkRatio
 
 ROOT = Path(__file__).resolve().parents[1]
 META_KEYS = ("segment", "date", "role")          # INTERFACES.md section 3: the only header keys
@@ -104,6 +105,47 @@ def talk_ratio(args: TalkRatio, caller: str) -> TalkRatioOut:
     return TalkRatioOut(interview_id=tr.interview_id, ratio=f"{pct[0]}:{pct[1]}", **counts)
 
 
+# ---------------------------------------------------------------- check_rewrite (HW2 · Petre)
+
+class RewriteOut(BaseModel):
+    verdict: Literal["falsifiable", "vague"]
+    rewrite: str                                # what to show the founder
+    unchanged: bool                             # True: rewrite is the founder's exact words
+    to_confirm: list[str]                       # the details inside [square brackets]
+
+
+BRACKETED = re.compile(r"\[([^\[\]]*)\]")
+NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
+
+
+def check_rewrite(args: CheckRewrite) -> RewriteOut:
+    """The model proposes a verdict and a rewrite; this decides what the founder may be shown.
+    No caller, no file, no model: the answer depends on the three arguments and nothing else."""
+    if args.verdict == "falsifiable":           # INTERFACES.md section 9: the input comes back unchanged
+        return RewriteOut(verdict="falsifiable", rewrite=args.hypothesis, unchanged=True, to_confirm=[])
+    if args.rewrite is None:
+        raise ToolFailure("A vague hypothesis needs a rewrite. Send one in `rewrite`, with every detail "
+                          "the founder did not state in [square brackets].")
+    if args.rewrite.casefold() == args.hypothesis.casefold():
+        raise ToolFailure("The rewrite repeats the founder's words, so it is still vague. Rewrite it with a "
+                          "specific segment, a past behavior and a threshold, each in [square brackets] "
+                          "if the founder did not state it.")
+    to_confirm, outside = [], args.rewrite
+    while BRACKETED.search(outside):            # innermost first, so nested brackets are handled too
+        to_confirm += [m.strip() for m in BRACKETED.findall(outside) if m.strip()]
+        outside = BRACKETED.sub(" ", outside)
+    said = set(NUMBER.findall(args.hypothesis))
+    invented = list(dict.fromkeys(n for n in NUMBER.findall(outside) if n not in said))
+    if invented:
+        raise ToolFailure(f"The rewrite states {', '.join(invented)} as if the founder had said it. Put each one "
+                          "in [square brackets] or remove it, then call check_rewrite again.")
+    if not to_confirm:
+        raise ToolFailure("The rewrite marks nothing in [square brackets], so the founder cannot tell what you "
+                          "assumed. Put every detail they did not state in [square brackets], then call "
+                          "check_rewrite again.")
+    return RewriteOut(verdict="vague", rewrite=args.rewrite, unchanged=False, to_confirm=to_confirm)
+
+
 # ---------------------------------------------------------------- the registry
 
 @dataclass(frozen=True)
@@ -123,6 +165,7 @@ class Tool:
 TOOLS = {t.name: t for t in [
     Tool("get_transcript", GetTranscript, get_transcript),
     Tool("talk_ratio", TalkRatio, talk_ratio),
+    Tool("check_rewrite", CheckRewrite, check_rewrite, needs_caller=False),
 ]}
 
 
