@@ -23,22 +23,39 @@ Actual results are pasted from a run of every case through `call_tool()` on 27 N
   ```diff
   +    model_config = ConfigDict(extra="allow")
   ```
-- Pull request: [#24](https://github.com/Goga-ml/AIPSD-project/pull/24) (closed, not merged)
+- Pull request: [#24](https://github.com/Goga-ml/AIPSD-project/pull/24) (closed without merging)
 - Run link: https://github.com/Goga-ml/AIPSD-project/actions/runs/46037904691 (the `pull_request` run; the `push` run on the same commit also failed: https://github.com/Goga-ml/AIPSD-project/actions/runs/46037901120)
 - Tests that failed, pasted from the run:
   ```
   FAILED tests/test_talk_ratio.py::test_the_contract_has_one_argument_and_forbids_the_rest - AssertionError
   FAILED tests/test_tool_golden.py::test_tool_golden_case[Ghmertoto:t6] - AssertionError: Ghmertoto:t6 should be refused but ran: {'interview_id': 'interview_01', 'interviewer_words': 78, 'customer_words': 115, 'interviewer_share': 0.4, 'ratio': '40:60'}
   ```
-- Merge state reported by GitHub for the pull request: `mergeStateStatus: BLOCKED`, check `test` failed
-- Text on the merge button: `<TODO: paste the exact text from the pull request page>`
+- Why the merge was blocked. The rule on `main` requires the status check `test` (read with `gh api repos/Goga-ml/AIPSD-project/rules/branches/main`: `required_status_checks: [{"context": "test"}]`). For pull request #24 GitHub reported, read with `gh pr view 24 --json mergeable,mergeStateStatus,statusCheckRollup`:
+  ```
+  mergeable=MERGEABLE  mergeStateStatus=BLOCKED  checks=test:FAILURE, test:FAILURE
+  ```
+  `MERGEABLE` means there were no conflicts, so the failed check is what blocked it. I read the state from the API and not from the page, so I am not quoting the wording of the merge button here.
 
 *The same weakening run locally: 2 failed, 59 passed.*
 
-**What the red run taught me.** `<TODO: reword in my own words.>` Two things I did not know before. First, I expected removing `extra="forbid"` to break all the adversarial cases. It broke one. The path case (t5) and the injected-instruction case (t7) stayed green, because the pattern on `interview_id` stops them and `extra="forbid"` has nothing to do with it. The visitor case (t8) stayed green because `tools_for()` stops it before the contract is even read. Only t6, the other founder's identity, depends on `extra="forbid"`: the failing test says the tool "should be refused but ran" and returned the other call's real numbers. So the rule I thought was "the security rule" protects exactly one of my four attacks. Second, my first red pull request was blocked for the wrong reason. `main` had moved while it was open, GitHub showed merge conflicts, and the `pull_request` CI run did not start at all; only the `push` run was red. A pull request that cannot merge because of conflicts proves nothing about the gate. I rebuilt the branch as `main` plus the one line, and only then was the block caused by the failed check.
+**What the red run taught me.** Before the run I could not have said which of my four attack cases depends on which rule. `extra="forbid"` looks like the main lock, so taking it off looks like it should break all of them. Only one broke. t5 (the path) and t7 (the instruction after the id) stayed green, because the id pattern stops them. t8 (the visitor) stayed green, because `tools_for()` never offers the tool to someone who is not signed in. Only t6, the other founder's name in the arguments, needs `extra="forbid"`. The failed test even shows what would have happened: the call "should be refused but ran" and gave back the numbers of `interview_01`. So each rule covers one attack, and if I delete a case I lose the only test for that rule.
 
-**The green run.** Product pull request [#21](https://github.com/Goga-ml/AIPSD-project/pull/21) · run link https://github.com/Goga-ml/AIPSD-project/actions/runs/46037688897 · last line of pytest: `<TODO: paste from the run page; locally on the same code it was "61 passed in 1.55s">`
+The second thing was about the run itself. My first red pull request was not really blocked by the gate. `main` had moved while it was open, GitHub showed conflicts, and the `pull_request` run did not even start (only the `push` run was red, https://github.com/Goga-ml/AIPSD-project/actions/runs/46037646279). A pull request that cannot merge because of conflicts says nothing about the gate. I rebuilt the branch as `main` plus the one line. After that the pull request was mergeable, the required check failed, and the state was `BLOCKED`. A red run only counts as evidence when the failed check is the only thing in the way.
 
-**Through the MCP door.** Client: `<TODO: Claude Code>` · the sentence I typed: `<TODO>` · the tool calls it made, in order: `<TODO>`
+**The green run.** Product pull request [#21](https://github.com/Goga-ml/AIPSD-project/pull/21) · run link https://github.com/Goga-ml/AIPSD-project/actions/runs/46037688897 · last line of the pytest step, pasted from the run log:
+```
+.............................................................            [100%]
+```
+That is 61 dots, one per passed test. CI runs `pytest -q tests` and `pytest.ini` adds another `-q`, so pytest prints no "61 passed" line there. On the same code locally the last line was `61 passed in 1.55s`.
+
+**Through the MCP door.**
+- Client: Claude Code 2.1.196 (model `claude-sonnet-4-6`), with the server added by
+  `claude mcp add --env GROUNDWORK_FOUNDER=founder-1 --transport stdio aipsd -- <the repo's .venv python> -m src.mcp_server`
+  (`claude mcp list` showed `aipsd ... ✔ Connected`). The question was sent from the terminal with `claude -p`, by the Claude Code session I used for this homework.
+- The sentence: "What is the talk ratio in interview_02? Who talked more, the interviewer or the customer?"
+- The tool calls it made, in order:
+  1. `ToolSearch {"query": "talk_ratio transcript"}`, Claude Code's own search, which found `mcp__aipsd__get_transcript` and `mcp__aipsd__talk_ratio`
+  2. `mcp__aipsd__talk_ratio {"interview_id": "interview_02"}` → `{"interview_id":"interview_02","interviewer_words":87,"customer_words":138,"interviewer_share":0.39,"ratio":"39:61"}`
+- Its answer: the customer talked more, 138 words to 87, ratio 39:61. It chose `talk_ratio` and did not read the whole transcript with `get_transcript`. The founder was never in the arguments: it came from `GROUNDWORK_FOUNDER` on the server.
 
 *Checked without a host: `tests/test_talk_ratio.py::test_the_mcp_door_returns_the_same_numbers` calls the tool through `Client(mcp)` and compares the result with the function-calling door.*

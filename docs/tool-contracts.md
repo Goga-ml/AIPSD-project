@@ -150,13 +150,72 @@ This is the code half of the linter. In HW1 the judging and the checking were on
 
 ---
 
+## `ask_interviews` (HW2 · Goga-ml)
+
+**In one sentence, for the model:** Answer a question about what customers said in the founder's interviews, citing transcript lines like [interview_01:L11]. Says exactly "no evidence found" when the transcripts do not answer it. Reads only, changes nothing.
+
+| | |
+|---|---|
+| **Effect** | reads |
+| **Undo** | nothing to undo: no state changes |
+| **Idempotent?** | yes for the data; the wording of an answer can differ between two model calls, the citations are always checked against what was retrieved |
+| **Offered to** | signed-in founders only (`tools_for(caller)`), like every tool that reads transcripts: the answer quotes customers' words |
+| **Identity from** | the session: `call_tool(call, allowed, caller)`; in the MCP server, `GROUNDWORK_FOUNDER` through `Resolve(...)`. The caller picks the workspace (`transcripts_dir(caller)`), never an argument |
+| **Touches** | the `interview_NN.txt` files in the caller's workspace, read only; one embedding call and at most one chat call per question (the chat call through `complete()` in `src/router.py`) |
+| **Must never** | answer from outside the transcripts, cite a line it did not retrieve, or let the model lower the abstain threshold |
+
+**Inputs.** Unknown fields are refused (`extra="forbid"`). There is deliberately no `min_score`: the threshold (0.65, [decision 0002](decisions/0002-ask-min-score-0-65.md)) is ours, not the model's.
+
+| Argument | Type | Constraint | Description the model reads |
+|---|---|---|---|
+| `question` | string | 3 to 300 characters, no control characters (`^[^\x00-\x1f\x7f]+$`) | The founder's question in plain words, one line |
+| `interviews` | list of strings, optional | each `^interview_[0-9]{2}$`, at most 10 | Only search these interviews; leave out to search all |
+| `k` | integer | 1 to 10, default 5 | How many transcript lines to retrieve |
+
+**Result.**
+
+| Field | Type | Note |
+|---|---|---|
+| `answer` | string | inline tags like `[interview_01:L11]`, or exactly `no evidence found` |
+| `abstained` | bool | true when the best score is below the threshold (no chat call is made), the model found nothing, or no citation survived the check |
+| `best_score` | float | cosine score of the best transcript line |
+| `citations` | list of `{interview_id, line}` | every tag in `answer`, each one a line that was really retrieved |
+
+**Expected failures.** Each one raises `ToolFailure`; `call_tool` returns it as `{ok: false, error: <message>}`.
+
+| When | Message the model reads |
+|---|---|
+| an interview id that does not exist | There is no interview interview_99. Available: interview_01, interview_02, interview_03. Call again with those ids, or leave interviews out to search all. |
+| every chat model down (the router's sorry), or the embedding provider overloaded, rate limited or unreachable | The interview search is busy right now (the model provider is overloaded). Tell the founder to try again in a minute; do not retry immediately. |
+| arguments fail the contract | invalid arguments: k: Input should be less than or equal to 10 |
+| a 400 or 401 (our bug) | not caught by the tool: `call_tool` returns "the tool failed unexpectedly", and nothing is retried |
+
+**Tests and golden cases.** `tests/test_ask.py` and `evals/tools/Goga-ml.yaml`; the cases run offline (`GROUNDWORK_OFFLINE=1`, `src/offline.py`).
+
+| Case | Expect | Where |
+|---|---|---|
+| a valid call | answer with a citation that was really retrieved | `test_answers_with_a_citation_it_really_retrieved` · golden `g1` |
+| off-topic question | exactly "no evidence found", no citations | `test_abstains_on_an_off_topic_question` · golden `g2` |
+| invalid arguments | refused before the tool runs | `test_contract_refuses_bad_shapes` · golden `b1` |
+| not offered to a visitor | refused, nothing runs | `test_a_visitor_is_not_offered_the_tool` |
+| identity in the arguments | refused (`founder`, `caller`) | `test_contract_refuses_unknown_fields_like_min_score_or_a_founder` |
+| adversarial: a path as an interview id (`../../.env`) | refused by the pattern | golden `a1` |
+| adversarial: the model sends `min_score: 0` to force an answer | refused by `extra="forbid"` | golden `a2` |
+| both doors | the MCP door returns the same result | `test_the_mcp_door_gives_the_same_answer` |
+
+Checked locally: with `extra="allow"` on `AskInterviews`, 3 of 98 tests turn red, including golden `a2`.
+
+**Log line.** The same line as every tool in `logs/tools.jsonl`. The `question` is logged as written: it is the founder's own words, not a customer's. The result, which quotes customers, is not logged.
+
+---
+
 ## HW2 owners
 
 Each member wraps the function from their own task in `TEAM-CONTRACT.md`. No two people wrap the same one. Fill your own row in your HW2 product pull request.
 
 | Member | GitHub | Function (TEAM-CONTRACT task) | Tool name | Effect |
 |---|---|---|---|---|
-| Goga | @Goga-ml | Task 4 · ask across interviews (RAG lookup) | | reads |
+| Goga | @Goga-ml | Task 4 · ask across interviews (RAG lookup) | `ask_interviews` | reads |
 | Petre | @Petre-Kharazashvili | Task 2 · hypothesis linter (the code half: verdict and rewrite check) | `check_rewrite` | reads nothing stored |
 | Otar | @Ghmertoto | Task 3 · interview technique coach (talk ratio, question labels) | `talk_ratio` | reads |
 | Dachi | @heinrichcorneliusagrippa | Task 1 · verified evidence extraction (quote check) | `verify_quote` | reads |

@@ -17,8 +17,8 @@ from pydantic import BaseModel
 
 from shared.transcript import parse_transcript
 
-from . import coach, verify
-from .contracts import CheckRewrite, Contract, GetTranscript, TalkRatio, VerifyQuote
+from . import ask, coach, verify
+from .contracts import AskInterviews, CheckRewrite, Contract, GetTranscript, TalkRatio, VerifyQuote
 
 ROOT = Path(__file__).resolve().parents[1]
 META_KEYS = ("segment", "date", "role")          # INTERFACES.md section 3: the only header keys
@@ -146,12 +146,52 @@ def check_rewrite(args: CheckRewrite) -> RewriteOut:
     return RewriteOut(verdict="vague", rewrite=args.rewrite, unchanged=False, to_confirm=to_confirm)
 
 
-# ---------------------------------------------------------------- verify_quote (HW2 · heinrichcorneliusagrippa)
+# ---------------------------------------------------------------- ask_interviews (HW2 · Goga-ml)
 
 class Citation(BaseModel):
     interview_id: str
-    line: int
+    line: int                                   # physical line number, for [interview_01:L11]
 
+
+class AskOut(BaseModel):
+    answer: str             # with inline tags like [interview_01:L11], or exactly "no evidence found"
+    abstained: bool
+    best_score: float       # cosine score of the best transcript line; below the threshold means abstain
+    citations: list[Citation]
+
+
+def _model_unavailable(e: Exception) -> bool:
+    """Every chat model down (the router's sorry), or the embedding provider overloaded, rate limited,
+    timed out or unreachable: expected, not our bug. A 400 or 401 is our bug and is not caught here."""
+    if isinstance(e, ask.ModelUnavailable):
+        return True
+    if "Timeout" in type(e).__name__ or "Connection" in type(e).__name__:
+        return True
+    status = getattr(e, "status_code", None) or getattr(e, "code", None)
+    return isinstance(status, int) and (status == 429 or status >= 500)
+
+
+def ask_interviews(args: AskInterviews, caller: str) -> AskOut:
+    """Reads only: retrieves transcript lines from the caller's workspace and answers from them."""
+    folder = transcripts_dir(caller)
+    if args.interviews:
+        known = ask.known_interviews(folder)
+        unknown = sorted(set(args.interviews) - set(known))
+        if unknown:
+            raise ToolFailure(f"There is no interview {', '.join(unknown)}. Available: {', '.join(known)}. "
+                              "Call again with those ids, or leave interviews out to search all.")
+    try:
+        out = ask.ask(args.question, folder, interviews=args.interviews, k=args.k)
+    except Exception as e:
+        if not _model_unavailable(e):
+            raise                                   # anything else is a bug: call_tool reports it, nothing leaks
+        raise ToolFailure("The interview search is busy right now (the model provider is overloaded). "
+                          "Tell the founder to try again in a minute; do not retry immediately.") from None
+    return AskOut(answer=out["answer"], abstained=out["abstained"], best_score=out["best_score"],
+                  citations=[Citation(**c) for c in out["citations"]])
+
+
+# ---------------------------------------------------------------- verify_quote (HW2 · heinrichcorneliusagrippa)
 
 class QuoteCheck(BaseModel):
     interview_id: str
@@ -200,6 +240,7 @@ TOOLS = {t.name: t for t in [
     Tool("get_transcript", GetTranscript, get_transcript),
     Tool("talk_ratio", TalkRatio, talk_ratio),
     Tool("check_rewrite", CheckRewrite, check_rewrite, needs_caller=False),
+    Tool("ask_interviews", AskInterviews, ask_interviews),
     Tool("verify_quote", VerifyQuote, verify_quote),
 ]}
 
