@@ -29,8 +29,20 @@ One entry per team-level delegation that mattered. Feature-level delegations are
 - **Came back wrong:** a test helper took the session identity as a keyword named `caller`, so the test that sends `caller` as a model argument silently replaced the session identity instead of being refused, and failed. Renamed the helper's parameter. Same lesson as the contract: a name the model can fill must never collide with identity.
 - **Caught by:** `pytest`, then a red-run check by hand: dropping `extra="forbid"` and removing the id pattern each turn two tests red.
 - **Decision:** pull request to `main`; waiting for a teammate's review and squash-merge. Otar builds the MCP server on this branch.
+- **AGENTS.md change:** none.
+- **Cost:** one session.
 
-### Entry 4 · MCP server and the `talk_ratio` tool (HW2 · Ghmertoto)
+### Entry 4 · Lab 8 fallback router
+- **Task:** Lab 8 Steps 1 to 3 and the offline half of Step 4: `docs/fallback-plan.md`, `src/router.py` from the course starter, `tests/test_router.py`, and the two AGENTS.md lines about model calls.
+- **Delegated to:** Claude Code (Claude Fable 5.2), driven by Petre, at rung 3. Context: `Lab-8/README.md`, the starter and its tests, three Lab 8 resources, `logs/usage.jsonl`, `hw1/petre-kharazashvili/golden.md`, decision 0003, and Goga's skeleton branch (`slice-13-skeleton-ci`).
+- **Plan check:** the task split fixed the scope (router only, no `src/llm.py`). Petre stopped the agent as it started writing the plan and told it to pull first.
+- **Came back wrong:** (1) the agent had branched from `main` before the skeleton existed and named the branch `slice-13-...` on a guess; issue 13 was already Goga's, and the skeleton branch was on the remote by then. (2) The starter imports `src.one_call`, which we do not have; ours is `one_call()` in `src/llm.py`. (3) The starter's 12 second limit would have counted two of our three logged lint calls (26.6 s, 27.8 s) as outages. (4) The live call (Step 2.4, Step 4) was not run by the agent: it had no key in its shell.
+- **Caught by:** (1) pulling, then rebuilding on the skeleton branch and running the suite the way CI does (`pytest -q tests`, 8 passed). (2) reading the starter's ADAPT 0 note against the task split, which puts the call in `src/llm.py`. (3) reading `logs/usage.jsonl` before accepting the default. Also checked that the tests can fail: replacing the `temporary()` check with "always try the next model" turns `test_our_own_bug_is_raised_not_hidden_by_the_next_model` red. (4) is open: Petre runs one real question twice and pastes the two `logs/router.jsonl` lines (`ok` with `place: 1`, then `cache`) into the pull request.
+- **Decision:** opened as a pull request, to merge after the skeleton (#14).
+- **AGENTS.md change:** "Only src/router.py calls one_call() in src/llm.py" and a pointer to `docs/fallback-plan.md`; removed "until the router lands" from the Always line.
+- **Cost:** one session; one rebuild after the pull.
+
+### Entry 5 · MCP server and the `talk_ratio` tool (HW2 · Ghmertoto)
 - **Task:** `src/mcp_server.py` and `tests/test_mcp.py` (task 3 of the Lab 5 catch-up), then Otar's HW2 tool: the `TalkRatio` contract, `talk_ratio` in `src/tools.py`, `src/coach.py` (moved from `hw1/Ghmertoto/src/talk_ratio.py`), the registry and MCP entries, `evals/tools/Ghmertoto.yaml` and `tests/test_talk_ratio.py`.
 - **Delegated to:** Claude Code (Claude Opus 5.5, then Claude Fable 5.2), driven by Otar, at rung 3: the agent edits, Otar reads every line. Context: `Lab-5/` of the course repo (brief, templates, the CampusPulse example), Goga's task split, `docs/INTERFACES.md`, Dachi's branch `slice-15-tool-gates`, and Otar's HW1 folder.
 - **Plan check:** one read-only tool with no model call, so the cases run in CI without a key; the function is the HW1 one, not a rewrite; identity is never an argument.
