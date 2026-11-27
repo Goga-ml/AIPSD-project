@@ -41,7 +41,7 @@ class TalkRatio(Contract):
 # ---------------------------------------------------------------- check_rewrite (HW2 · Petre)
 
 ONE_LINE = r"^\S(?:[^\x00-\x1f\x7f]*\S)?$"       # no line breaks or control characters, no outer spaces
-HypothesisText = Annotated[str, Field(min_length=1, max_length=500, pattern=ONE_LINE,
+HypothesisText = Annotated[str, Field(min_length=1, max_length=500,
                                       description="The founder's hypothesis, exactly as they wrote it, on one line")]
 Verdict = Annotated[Literal["falsifiable", "vague"], Field(description="Your verdict on the hypothesis")]
 RewriteText = Annotated[str, Field(min_length=1, max_length=1000, pattern=ONE_LINE,
