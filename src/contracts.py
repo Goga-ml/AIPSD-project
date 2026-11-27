@@ -35,4 +35,5 @@ class GetTranscript(Contract):
 class TalkRatio(Contract):
     """Talk ratio for one customer interview: how many words the interviewer and the customer spoke,
     and the interviewer's share, counted by code and never estimated. Reads only, changes nothing."""
+    model_config = ConfigDict(extra="allow")
     interview_id: InterviewId
