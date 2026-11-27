@@ -1,0 +1,9 @@
+"""Every test runs offline: no key, no network, no cost. Logs go to a temp folder."""
+import os
+import tempfile
+
+_tmp = tempfile.mkdtemp(prefix="groundwork-tests-")
+os.environ["GROUNDWORK_USAGE_LOG"] = os.path.join(_tmp, "usage.jsonl")
+os.environ["GROUNDWORK_TOOL_LOG"] = os.path.join(_tmp, "tools.jsonl")
+os.environ.pop("OPENROUTER_API_KEY", None)
+os.environ.pop("GEMINI_API_KEY", None)
