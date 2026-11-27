@@ -1,6 +1,6 @@
 # Pattern Journal · Dachi Khelashvili (@heinrichcorneliusagrippa) · Weeks 5 to 8
 
-*Written on 27 Nov 2026, during the Lab 5 to 8 catch-up. Drafted with Claude from the work we did together (Task 2, HW2 `verify_quote`, my HW1) and checked by me. AI use logged in `docs/delegation-log.md`. One entry per week: the pattern, where I used it, what I noticed, what I would do differently. Weeks 1 to 4: `hw1/heinrichcorneliusagrippa/journal.md`.*
+*Drafted with Claude from the work we did together (Task 2, HW2 `verify_quote`, my HW1) and checked by me. AI use logged in `docs/delegation-log.md`. One entry per week: the pattern, where I used it, what I noticed, what I would do differently. Weeks 1 to 4: `hw1/heinrichcorneliusagrippa/journal.md`.*
 
 ## Week 5 · Tool Contract
 
