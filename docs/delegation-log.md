@@ -41,3 +41,18 @@ One entry per team-level delegation that mattered. Feature-level delegations are
 - **Decision:** opened as a pull request, to merge after the skeleton (#14).
 - **AGENTS.md change:** "Only src/router.py calls one_call() in src/llm.py" and a pointer to `docs/fallback-plan.md`; removed "until the router lands" from the Always line.
 - **Cost:** one session; one rebuild after the pull.
+
+### Entry 5 · MCP server and the `talk_ratio` tool (HW2 · Ghmertoto)
+- **Task:** `src/mcp_server.py` and `tests/test_mcp.py` (task 3 of the Lab 5 catch-up), then Otar's HW2 tool: the `TalkRatio` contract, `talk_ratio` in `src/tools.py`, `src/coach.py` (moved from `hw1/Ghmertoto/src/talk_ratio.py`), the registry and MCP entries, `evals/tools/Ghmertoto.yaml` and `tests/test_talk_ratio.py`.
+- **Delegated to:** Claude Code (Claude Opus 5.5, then Claude Fable 5.2), driven by Otar, at rung 3: the agent edits, Otar reads every line. Context: `Lab-5/` of the course repo (brief, templates, the CampusPulse example), Goga's task split, `docs/INTERFACES.md`, Dachi's branch `slice-15-tool-gates`, and Otar's HW1 folder.
+- **Plan check:** one read-only tool with no model call, so the cases run in CI without a key; the function is the HW1 one, not a rewrite; identity is never an argument.
+- **Came back wrong / at risk:**
+  - The first version was built before Dachi's branch existed, against the agent's own guess at task 2. The guess was wrong in two places: in the real code every tool takes the caller from the session, and a visitor is offered no tool at all. The MCP server, the tool's signature and the callers in the cases were redone on the real code.
+  - The id pattern `^interview_\d{2}$` accepted digits from other scripts (`interview_٠١`), because `\d` is not only 0 to 9. It could not leave the transcripts folder, but the contract was looser than it said.
+  - The first expected numbers for `interview_01` were the ones from Otar's HW1 fixtures (58 and 61 words). The shared transcripts in `data/transcripts/` are longer: 78 and 115.
+  - One MCP test could pass without proving anything: it checked that the other founder's id was *not* in a list that would also be empty if the call had failed. It now checks that the list is exactly the server's founder.
+- **Caught by:** reading Dachi's code when it was pushed, then running the tests on it; probing the contract with odd ids (trailing newline, upper case, other digits) instead of trusting the pattern; running the function on the shared transcripts before writing the cases, plus a second count in `tests/test_talk_ratio.py` that does not use the shared parser; rereading each test and asking what it would do if the feature were broken.
+- **Decision:** pattern changed to `[0-9]` with a test for each odd id (this touches one line of Dachi's `InterviewId`); expected numbers taken from the run, not from HW1. Weakening the contract locally (`extra="allow"`) turned 2 of 58 tests red, which is the red run HW2 asks for.
+- **Review rule:** Otar reviews every line of the diff before a pull request is opened, and nothing is merged that he cannot explain line by line.
+- **AGENTS.md change:** none.
+- **Cost:** one session.

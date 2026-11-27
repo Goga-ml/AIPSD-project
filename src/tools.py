@@ -16,7 +16,8 @@ from pydantic import BaseModel
 
 from shared.transcript import parse_transcript
 
-from .contracts import Contract, GetTranscript
+from . import coach
+from .contracts import Contract, GetTranscript, TalkRatio
 
 ROOT = Path(__file__).resolve().parents[1]
 META_KEYS = ("segment", "date", "role")          # INTERFACES.md section 3: the only header keys
@@ -56,7 +57,7 @@ class TranscriptOut(BaseModel):
 # ---------------------------------------------------------------- get_transcript
 
 def get_transcript(args: GetTranscript, caller: str) -> TranscriptOut:
-    path = transcripts_dir(caller) / f"{args.interview_id}.txt"   # safe: the id matched ^interview_\d{2}$
+    path = transcripts_dir(caller) / f"{args.interview_id}.txt"   # safe: the id matched ^interview_[0-9]{2}$
     if not path.is_file():
         raise ToolFailure(f"There is no interview {args.interview_id}. "
                           "Ask the founder which interview they mean; ids look like interview_01.")
@@ -73,6 +74,34 @@ def get_transcript(args: GetTranscript, caller: str) -> TranscriptOut:
         total_turns=len(tr.turns),
         truncated=len(turns) > args.max_turns,
     )
+
+
+# ---------------------------------------------------------------- talk_ratio (HW2 · Ghmertoto)
+
+class TalkRatioOut(BaseModel):
+    interview_id: str
+    interviewer_words: int
+    customer_words: int
+    interviewer_share: float                    # 0.0 to 1.0, two decimals
+    ratio: str                                  # "interviewer:customer" in whole percent, adds up to 100
+
+
+def talk_ratio(args: TalkRatio, caller: str) -> TalkRatioOut:
+    path = transcripts_dir(caller) / f"{args.interview_id}.txt"   # safe: the id matched ^interview_[0-9]{2}$
+    if not path.is_file():
+        raise ToolFailure(f"There is no interview {args.interview_id}. "
+                          "Ask the founder which interview they mean; do not guess an id.")
+    try:
+        tr = parse_transcript(path)
+    except ValueError:
+        raise ToolFailure(f"{args.interview_id} is not in the transcript format, so its words cannot be counted. "
+                          "Tell the founder to fix the file; do not estimate a ratio.") from None
+    counts = coach.talk_ratio(tr)
+    pct = coach.percentages(counts)
+    if pct is None:
+        raise ToolFailure(f"{args.interview_id} has no spoken turns, so there is no talk ratio. "
+                          "Tell the founder the transcript is empty; do not estimate one.")
+    return TalkRatioOut(interview_id=tr.interview_id, ratio=f"{pct[0]}:{pct[1]}", **counts)
 
 
 # ---------------------------------------------------------------- the registry
@@ -93,6 +122,7 @@ class Tool:
 
 TOOLS = {t.name: t for t in [
     Tool("get_transcript", GetTranscript, get_transcript),
+    Tool("talk_ratio", TalkRatio, talk_ratio),
 ]}
 
 
