@@ -64,5 +64,6 @@ class CheckRewrite(Contract):
 class VerifyQuote(Contract):
     """Check that a quote really appears in a Customer turn of one interview, and get the line to cite.
     Use it before citing any quote as evidence. supported=false means do not cite it. Reads only, changes nothing."""
+    model_config = ConfigDict(extra="allow")    # RED RUN, do not merge: weakens the contract for HW2 evidence
     interview_id: InterviewId
     quote: Quote
