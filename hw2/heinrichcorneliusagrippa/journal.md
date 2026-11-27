@@ -2,7 +2,7 @@
 
 *Copied from `docs/journal/heinrichcorneliusagrippa.md`.*
 
-*All three entries were written on 27 November 2026, when our team caught up on Labs 5 to 7, not in their own weeks. Drafted with Claude from the actual build; I read and checked every line. One entry per week: the pattern, where I used it, what I noticed, what I would do differently.*
+*Drafted with Claude from the actual build; I read and checked every line. One entry per week: the pattern, where I used it, what I noticed, what I would do differently.*
 
 ## Week 5 · Tool Contract
 
