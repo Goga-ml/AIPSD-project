@@ -1,8 +1,8 @@
 # HW2 · Tool Contract · `verify_quote`
 
 **Tool:** `verify_quote` · **Owner:** `heinrichcorneliusagrippa` (Dachi Khelashvili) · **Team repo:** https://github.com/Goga-ml/AIPSD-project
-**Code (commit `4d04083`, the head of the product pull request):** contract class `VerifyQuote` in [`src/contracts.py` line 64](https://github.com/Goga-ml/AIPSD-project/blob/4d04083/src/contracts.py#L64) · function `verify_quote` in [`src/tools.py` line 165](https://github.com/Goga-ml/AIPSD-project/blob/4d04083/src/tools.py#L165) (the check itself is `best_match` in [`src/verify.py` line 35](https://github.com/Goga-ml/AIPSD-project/blob/4d04083/src/verify.py#L35), copied from my HW1) · registry entry in [`src/tools.py` line 203](https://github.com/Goga-ml/AIPSD-project/blob/4d04083/src/tools.py#L203) (`TOOLS`) · MCP registration in [`src/mcp_server.py` line 80](https://github.com/Goga-ml/AIPSD-project/blob/4d04083/src/mcp_server.py#L80)
-**Product pull request:** [#32](https://github.com/Goga-ml/AIPSD-project/pull/32) (issue [#30](https://github.com/Goga-ml/AIPSD-project/issues/30)) · merged commit: `<fill in after the squash-merge>`
+**Code on `main`:** contract class `VerifyQuote` in [`src/contracts.py` line 83](https://github.com/Goga-ml/AIPSD-project/blob/1f3a47d/src/contracts.py#L83) · function `verify_quote` in [`src/tools.py` line 205](https://github.com/Goga-ml/AIPSD-project/blob/1f3a47d/src/tools.py#L205) (the check itself is `best_match` in [`src/verify.py` line 35](https://github.com/Goga-ml/AIPSD-project/blob/1f3a47d/src/verify.py#L35), copied from my HW1) · registry entry in [`src/tools.py` line 244](https://github.com/Goga-ml/AIPSD-project/blob/1f3a47d/src/tools.py#L244) (`TOOLS`) · MCP registration in [`src/mcp_server.py` line 85](https://github.com/Goga-ml/AIPSD-project/blob/1f3a47d/src/mcp_server.py#L85)
+**Product pull request:** [#32](https://github.com/Goga-ml/AIPSD-project/pull/32) (issue [#30](https://github.com/Goga-ml/AIPSD-project/issues/30)) · merged commit `1f3a47d`
 
 **In one sentence, for the model:** "Check that a quote really appears in a Customer turn of one interview, and get the line to cite. Use it before citing any quote as evidence. supported=false means do not cite it. Reads only, changes nothing."
 
@@ -11,7 +11,7 @@
 | **Effect** | reads. It scores one quote against one transcript and changes nothing |
 | **Undo** | nothing to undo |
 | **Idempotent?** | yes. The second identical call returns the same result: `{"interview_id": "interview_01", "supported": true, "citation": {"interview_id": "interview_01", "line": 11}, "best_line": 11, "match_score": 100.0, "reason": null}` |
-| **Offered to** | signed-in founders only. `tools_for(caller)` in [`src/tools.py` line 207](https://github.com/Goga-ml/AIPSD-project/blob/4d04083/src/tools.py#L207) drops every tool with `needs_caller=True` when there is no caller |
+| **Offered to** | signed-in founders only. `tools_for(caller)` in [`src/tools.py` line 248](https://github.com/Goga-ml/AIPSD-project/blob/1f3a47d/src/tools.py#L248) drops every tool with `needs_caller=True` when there is no caller |
 | **Identity from** | the session: `call_tool(call, allowed, caller)` in `src/act.py`; over MCP, `Founder = Annotated[str, Resolve(signed_in_founder)]` reads `GROUNDWORK_FOUNDER` on the server. Never an argument |
 | **Touches** | one file, read only: `data/transcripts/<interview_id>.txt`, parsed by `shared/transcript.py` |
 | **Must never** | say `supported: true` for words that are not in a Customer turn, or cite a line the code did not match |
