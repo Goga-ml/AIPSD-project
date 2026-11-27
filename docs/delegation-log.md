@@ -21,3 +21,13 @@ One entry per team-level delegation that mattered. Feature-level delegations are
 - **Decision:** fixed on the same branch; CI green; waiting for a teammate's review and squash-merge.
 - **AGENTS.md change:** created it, with the Never lines from Lab 5 (no identity in tool arguments; no tool that deletes or sends without asking) and the Always line from Lab 8 (every model call through `complete()` in `src/router.py`). Lesson for next time: run tests exactly as CI does (`pytest`, not `python -m pytest`) before pushing.
 - **Cost:** one session, one red CI run.
+
+### Entry 3 · Tool contract and the three gates
+- **Task:** issue #15: `docs/tool-contracts.md` (team tool `get_transcript` and the HW2 owners table), `src/contracts.py`, `src/tools.py`, `src/act.py`, `tests/test_act.py`, `tests/test_tool_golden.py` (from `Lab-5/templates/`, left out of #13 because it needs `src/act.py`) and `evals/tools/team-get-transcript.yaml`. Built on the #13 skeleton (PR #14, merged).
+- **Delegated to:** Claude (Claude Opus 5.5), driven by Dachi. Context: `Lab-5/examples/campuspulse-tools/src/` (`contracts.py`, `tools.py`, `act.py`), `Lab-5/templates/`, `docs/INTERFACES.md`, `shared/transcript.py`, `AGENTS.md`.
+- **Plan check:** the task list in the Lab 5 to 8 catch-up split; no separate written plan for the code.
+- **Came back wrong:** a test helper took the session identity as a keyword named `caller`, so the test that sends `caller` as a model argument silently replaced the session identity instead of being refused, and failed. Renamed the helper's parameter. Same lesson as the contract: a name the model can fill must never collide with identity.
+- **Caught by:** `pytest`, then a red-run check by hand: dropping `extra="forbid"` and removing the id pattern each turn two tests red.
+- **Decision:** pull request to `main`; waiting for a teammate's review and squash-merge. Otar builds the MCP server on this branch.
+- **AGENTS.md change:** none.
+- **Cost:** one session.
