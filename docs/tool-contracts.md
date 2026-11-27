@@ -66,6 +66,59 @@ Golden file: `evals/tools/team-get-transcript.yaml`, run by `tests/test_tool_gol
 
 ---
 
+## `check_rewrite`
+
+*HW2 · owner: Petre (@Petre-Kharazashvili) · Task 2, the hypothesis linter. Write-up: `hw2/petre-kharazashvili/`.*
+
+**In one sentence, for the model:** Check your verdict and rewrite of a founder's hypothesis before you show them: a falsifiable hypothesis comes back in the founder's exact words, and a rewrite may only state numbers the founder wrote or numbers inside [square brackets]. Reads nothing, changes nothing.
+
+This is the code half of the linter. In HW1 the judging and the checking were one model call behind a web form. Here the model that calls the tool does the judging; the tool only decides what may be shown to the founder.
+
+| | |
+|---|---|
+| **Effect** | reads nothing and changes nothing: it computes its answer from its three arguments |
+| **Undo** | nothing to undo: no state changes |
+| **Idempotent?** | yes: the same arguments return the same result |
+| **Offered to** | every caller, signed in or not (`needs_caller=False`, so `tools_for(None)` still offers it). It touches no transcript and no stored data |
+| **Identity from** | not used. The function has no `caller` parameter, and `call_tool` does not pass one |
+| **Touches** | nothing: no file, no table, no network, no model |
+| **Must never** | return a number to the founder as if they had said it; call a model; keep the hypothesis anywhere (the log line records its length, not its text) |
+
+**Inputs.** Unknown fields are refused (`extra="forbid"`).
+
+| Argument | Type | Constraint | Description the model reads |
+|---|---|---|---|
+| `hypothesis` | string | 1 to 500 characters, one line: pattern `^\S(?:[^\x00-\x1f\x7f]*\S)?$` | The founder's hypothesis, exactly as they wrote it, on one line |
+| `verdict` | string | `falsifiable` or `vague` | Your verdict on the hypothesis |
+| `rewrite` | string, optional | 1 to 1000 characters, one line, same pattern | Your rewrite. Needed when the verdict is vague. Every detail the founder did not state goes in [square brackets] |
+
+**Result.**
+
+| Field | Type | Note |
+|---|---|---|
+| `verdict` | `falsifiable` \| `vague` | as given |
+| `rewrite` | string | what to show the founder. For `falsifiable` it is the `hypothesis` argument itself, whatever `rewrite` was sent |
+| `unchanged` | bool | true when `rewrite` is the founder's exact words |
+| `to_confirm` | list of strings | the details inside [square brackets]: what the founder must confirm or choose |
+
+**Expected failures.** Each one raises `ToolFailure`; `call_tool` returns it as `{ok: false, error: <message>}`.
+
+| When | Message the model reads |
+|---|---|
+| vague, and no rewrite was sent | A vague hypothesis needs a rewrite. Send one in `rewrite`, with every detail the founder did not state in [square brackets]. |
+| vague, and the rewrite repeats the hypothesis | The rewrite repeats the founder's words, so it is still vague. Rewrite it with a specific segment, a past behavior and a threshold, each in [square brackets] if the founder did not state it. |
+| vague, and the rewrite states a number the founder did not write | The rewrite states 3, 29 as if the founder had said it. Put each one in [square brackets] or remove it, then call check_rewrite again. |
+| vague, and the rewrite has nothing in brackets | The rewrite marks nothing in [square brackets], so the founder cannot tell what you assumed. Put every detail they did not state in [square brackets], then call check_rewrite again. |
+| arguments fail the contract | invalid arguments: verdict: Input should be 'falsifiable' or 'vague' |
+
+**What it does not check.** Only numbers are compared with the founder's text. An invented segment written in words and left outside brackets is not caught.
+
+**Tests and golden cases.** `tests/test_check_rewrite.py`; golden file `evals/tools/petre-kharazashvili.yaml`, run by `tests/test_tool_golden.py` in CI.
+
+**Log line.** `hypothesis` and `rewrite` are in `FREE_TEXT` in `src/act.py`: the log keeps their lengths, not a founder's idea.
+
+---
+
 ## `ask_interviews` (HW2 · Goga-ml)
 
 **In one sentence, for the model:** Answer a question about what customers said in the founder's interviews, citing transcript lines like [interview_01:L11]. Says exactly "no evidence found" when the transcripts do not answer it. Reads only, changes nothing.
@@ -75,7 +128,7 @@ Golden file: `evals/tools/team-get-transcript.yaml`, run by `tests/test_tool_gol
 | **Effect** | reads |
 | **Undo** | nothing to undo: no state changes |
 | **Idempotent?** | yes for the data; the wording of an answer can differ between two model calls, the citations are always checked against what was retrieved |
-| **Offered to** | signed-in founders only (`tools_for(caller)`), like every tool: the answer quotes customers' words |
+| **Offered to** | signed-in founders only (`tools_for(caller)`), like every tool that reads transcripts: the answer quotes customers' words |
 | **Identity from** | the session: `call_tool(call, allowed, caller)`; in the MCP server, `GROUNDWORK_FOUNDER` through `Resolve(...)`. The caller picks the workspace (`transcripts_dir(caller)`), never an argument |
 | **Touches** | the `interview_NN.txt` files in the caller's workspace, read only; one embedding call and at most one chat call per question (the chat call through `complete()` in `src/router.py`) |
 | **Must never** | answer from outside the transcripts, cite a line it did not retrieve, or let the model lower the abstain threshold |
@@ -132,6 +185,6 @@ Each member wraps the function from their own task in `TEAM-CONTRACT.md`. No two
 | Member | GitHub | Function (TEAM-CONTRACT task) | Tool name | Effect |
 |---|---|---|---|---|
 | Goga | @Goga-ml | Task 4 · ask across interviews (RAG lookup) | `ask_interviews` | reads |
-| Petre | @Petre-Kharazashvili | Task 2 · hypothesis linter | | reads |
+| Petre | @Petre-Kharazashvili | Task 2 · hypothesis linter (the code half: verdict and rewrite check) | `check_rewrite` | reads nothing stored |
 | Otar | @Ghmertoto | Task 3 · interview technique coach (talk ratio, question labels) | `talk_ratio` | reads |
 | Dachi | @heinrichcorneliusagrippa | Task 1 · verified evidence extraction (quote check) | `verify_quote` | reads |
