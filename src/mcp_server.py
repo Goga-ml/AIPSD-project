@@ -26,7 +26,8 @@ from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import ToolAnnotations
 
 from . import tools
-from .contracts import GetTranscript, InterviewId, MaxTurns, Speaker, TalkRatio
+from .contracts import (CheckRewrite, GetTranscript, HypothesisText, InterviewId, MaxTurns, RewriteText,
+                        Speaker, TalkRatio, Verdict)
 
 mcp = MCPServer("groundwork", instructions="Customer-interview evidence for founders. Tools read "
                                            "transcripts by interview id and give physical line numbers "
@@ -67,6 +68,12 @@ def get_transcript(interview_id: InterviewId, founder: Founder, speaker: Speaker
 @mcp.tool(annotations=READS, description=describe("talk_ratio"))
 def talk_ratio(interview_id: InterviewId, founder: Founder) -> tools.TalkRatioOut:
     return _run(tools.talk_ratio, TalkRatio(interview_id=interview_id), founder)
+
+
+@mcp.tool(annotations=READS, description=describe("check_rewrite"))
+def check_rewrite(hypothesis: HypothesisText, verdict: Verdict, rewrite: RewriteText | None = None) -> tools.RewriteOut:
+    # No founder parameter, on purpose: the tool reads no stored data, so it needs no caller.
+    return _run(tools.check_rewrite, CheckRewrite(hypothesis=hypothesis, verdict=verdict, rewrite=rewrite))
 
 
 if __name__ == "__main__":

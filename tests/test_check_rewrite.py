@@ -95,3 +95,23 @@ def test_the_log_keeps_the_length_of_a_hypothesis_not_its_text():
     assert line["tool"] == "check_rewrite" and line["ok"] is True
     assert line["arguments"] == {"hypothesis": f"<{len(VAGUE)} chars>", "verdict": "vague", "rewrite": f"<{len(GOOD_REWRITE)} chars>"}
     assert "coffee" not in last
+
+
+def test_the_mcp_door_gives_the_same_answer_and_the_same_refusal():
+    import asyncio
+
+    from mcp import Client
+
+    from src.mcp_server import mcp
+
+    async def through_mcp(args):
+        async with Client(mcp) as c:
+            return await c.call_tool("check_rewrite", args)
+
+    args = {"hypothesis": FALSIFIABLE, "verdict": "falsifiable", "rewrite": "At least 9 of 10 owners will pay $50/month."}
+    good = asyncio.run(through_mcp(args))
+    assert not good.is_error and good.structured_content == run(**args)["result"]
+
+    bad = {"hypothesis": VAGUE, "verdict": "vague", "rewrite": "At least [7] of [10] [owners] will pay $29/month."}
+    refused = asyncio.run(through_mcp(bad))
+    assert refused.is_error and run(**bad)["error"] in refused.content[0].text
