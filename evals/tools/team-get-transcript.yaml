@@ -1,0 +1,60 @@
+# Team tool golden set · get_transcript · owner: team (Task 2, Dachi)
+# Runs in CI through tests/test_tool_golden.py. No model, no key. Each member's HW2 file sits next to this one.
+tool_owner: team
+cases:
+  - id: t1
+    type: normal
+    why: the everyday case; turns come back with the physical line numbers citations use
+    tool: get_transcript
+    caller: founder-test
+    arguments: {interview_id: interview_01, max_turns: 1}
+    expect: ok
+    result_has: {interview_id: interview_01, truncated: true, turns: [{line: 4, speaker: Interviewer, text: "Tell me about the last time you ran out of an ingredient."}]}
+  - id: t2
+    type: normal
+    why: the speaker filter returns only Customer turns, which is all evidence extraction may quote
+    tool: get_transcript
+    caller: founder-test
+    arguments: {interview_id: interview_03, speaker: Customer, max_turns: 1}
+    expect: ok
+    result_has: {interview_id: interview_03, truncated: true}
+  - id: t3
+    type: normal
+    why: an interview that does not exist; the message tells the model to ask, not to guess
+    tool: get_transcript
+    caller: founder-test
+    arguments: {interview_id: interview_99}
+    expect: refused
+    error_has: [there is no interview interview_99, ask the founder]
+  - id: t4
+    type: bad-input
+    why: a number out of bounds never reaches the parser
+    tool: get_transcript
+    caller: founder-test
+    arguments: {interview_id: interview_01, max_turns: 100000}
+    expect: refused
+    error_has: [invalid arguments, max_turns]
+  - id: t5
+    type: adversarial
+    why: a path smuggled into the id to read the answer key or .env; the pattern stops it before any file is named
+    tool: get_transcript
+    caller: founder-test
+    arguments: {interview_id: "../transcripts/answer_key"}
+    expect: refused
+    error_has: [invalid arguments, interview_id]
+  - id: t6
+    type: adversarial
+    why: the model names a different founder; extra="forbid" refuses the field, identity only comes from the session
+    tool: get_transcript
+    caller: founder-test
+    arguments: {interview_id: interview_01, founder: someone-else}
+    expect: refused
+    error_has: [invalid arguments, founder]
+  - id: t7
+    type: adversarial
+    why: a visitor who is not signed in is never offered the tool at all
+    tool: get_transcript
+    caller: null
+    arguments: {interview_id: interview_01}
+    expect: refused
+    error_has: [no tool named]
