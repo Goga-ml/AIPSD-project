@@ -64,6 +64,37 @@ Golden file: `evals/tools/team-get-transcript.yaml`, run by `tests/test_tool_gol
 
 **Log line.** One line per call in `logs/tools.jsonl` (`GROUNDWORK_TOOL_LOG` in tests): time, tool, arguments, ok, error, a 12-character hash of the caller, latency. It leaves out the caller id and the result, because the result is customers' words. Argument names listed in `FREE_TEXT` in `src/act.py` are logged as a length only.
 
+## `verify_quote` (HW2 · @heinrichcorneliusagrippa)
+
+**In one sentence, for the model:** Check that a quote really appears in a Customer turn of one interview, and get the line to cite. Use it before citing any quote as evidence. supported=false means do not cite it. Reads only, changes nothing.
+
+| | |
+|---|---|
+| **Effect** | reads |
+| **Undo** | nothing to undo |
+| **Idempotent?** | yes: the same quote gets the same score and line |
+| **Offered to** | signed-in founders only (`tools_for(caller)`) |
+| **Identity from** | the session, as for `get_transcript`. Never an argument |
+| **Touches** | one `interview_NN.txt`, read only, through `shared/transcript.py` |
+| **Must never** | return `supported: true` for words that are not in a Customer turn, or cite a line the code did not match |
+
+**Inputs.** Unknown fields are refused.
+
+| Argument | Type | Constraint | Description the model reads |
+|---|---|---|---|
+| `interview_id` | string | pattern `^interview_[0-9]{2}$` | Interview id: the file name without .txt, like interview_01 |
+| `quote` | string | 8 to 300 characters, pattern `^[^\x00-\x1f\x7f]+$` (no newline: a quote may not span two turns) | The exact words to check, copied from one Customer turn |
+
+**Rule.** The Task 1 check in `src/verify.py`: RapidFuzz `partial_ratio` against every Customer turn, best turn wins, supported at 90 or more. If the quote is longer than the turn, `fuzz.ratio` is used instead, so a real sentence with invented text added does not pass.
+
+**Result.** `interview_id`, `supported`, `citation` (`{interview_id, line}`, INTERFACES section 5, only when supported), `best_line`, `match_score`, `reason` (`quote_not_found` or null). An unsupported quote is a result, not an error: the model must see the score and not cite it.
+
+**Expected failures.** Same as `get_transcript` (no such interview, broken transcript, invalid arguments, not offered, not signed in).
+
+**Log line.** As for every tool; `quote` is in `FREE_TEXT`, so the log keeps its length only, never the customer's words.
+
+**Golden cases.** `evals/tools/heinrichcorneliusagrippa.yaml`: 3 normal, 1 bad input, 2 adversarial. More tests: `tests/test_verify_quote.py`.
+
 ---
 
 ## `check_rewrite`

@@ -17,8 +17,8 @@ from pydantic import BaseModel
 
 from shared.transcript import parse_transcript
 
-from . import ask, coach
-from .contracts import AskInterviews, CheckRewrite, Contract, GetTranscript, TalkRatio
+from . import ask, coach, verify
+from .contracts import AskInterviews, CheckRewrite, Contract, GetTranscript, TalkRatio, VerifyQuote
 
 ROOT = Path(__file__).resolve().parents[1]
 META_KEYS = ("segment", "date", "role")          # INTERFACES.md section 3: the only header keys
@@ -191,6 +191,35 @@ def ask_interviews(args: AskInterviews, caller: str) -> AskOut:
                   citations=[Citation(**c) for c in out["citations"]])
 
 
+# ---------------------------------------------------------------- verify_quote (HW2 · heinrichcorneliusagrippa)
+
+class QuoteCheck(BaseModel):
+    interview_id: str
+    supported: bool                        # true only at match_score >= 90 against a Customer turn
+    citation: Citation | None              # set only when supported (INTERFACES section 5)
+    best_line: int | None                  # the closest Customer line, also when not supported
+    match_score: float                     # 0 to 100, rounded to 1 decimal
+    reason: Literal["quote_not_found"] | None
+
+
+def verify_quote(args: VerifyQuote, caller: str) -> QuoteCheck:
+    """The model proposes, code decides: the Task 1 check (src/verify.py), now callable by a model."""
+    path = transcripts_dir(caller) / f"{args.interview_id}.txt"   # safe: the id matched ^interview_[0-9]{2}$
+    if not path.is_file():
+        raise ToolFailure(f"There is no interview {args.interview_id}. "
+                          "Ask the founder which interview they mean; ids look like interview_01.")
+    try:
+        tr = parse_transcript(path)
+    except ValueError:
+        raise ToolFailure(f"{args.interview_id} is not in the transcript format, so no quote in it can be verified. "
+                          "Tell the founder to fix the file; do not cite it.") from None
+    m = verify.best_match(args.quote, tr)
+    ok = verify.is_supported(m)
+    return QuoteCheck(interview_id=tr.interview_id, supported=ok,
+                      citation=Citation(interview_id=tr.interview_id, line=m.line) if ok else None,
+                      best_line=m.line, match_score=m.score, reason=None if ok else "quote_not_found")
+
+
 # ---------------------------------------------------------------- the registry
 
 @dataclass(frozen=True)
@@ -212,6 +241,7 @@ TOOLS = {t.name: t for t in [
     Tool("talk_ratio", TalkRatio, talk_ratio),
     Tool("check_rewrite", CheckRewrite, check_rewrite, needs_caller=False),
     Tool("ask_interviews", AskInterviews, ask_interviews),
+    Tool("verify_quote", VerifyQuote, verify_quote),
 ]}
 
 

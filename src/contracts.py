@@ -18,6 +18,9 @@ InterviewId = Annotated[str, Field(pattern=r"^interview_[0-9]{2}$",
 Speaker = Annotated[Literal["Interviewer", "Customer"],
                     Field(description="Only this speaker's turns. Leave out for both")]
 MaxTurns = Annotated[int, Field(ge=1, le=200, description="How many turns to return, 1 to 200")]
+# One quote from one turn: printable text, no newline (a quote may not span two turns, INTERFACES section 6).
+Quote = Annotated[str, Field(min_length=8, max_length=300, pattern=r"^[^\x00-\x1f\x7f]+$",
+                             description="The exact words to check, copied from one Customer turn, 8 to 300 characters")]
 
 
 class Contract(BaseModel):
@@ -75,3 +78,10 @@ class AskInterviews(Contract):
     question: Question
     interviews: InterviewIds = None
     k: TopK = 5
+
+
+class VerifyQuote(Contract):
+    """Check that a quote really appears in a Customer turn of one interview, and get the line to cite.
+    Use it before citing any quote as evidence. supported=false means do not cite it. Reads only, changes nothing."""
+    interview_id: InterviewId
+    quote: Quote

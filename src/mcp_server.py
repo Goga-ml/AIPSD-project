@@ -27,7 +27,8 @@ from mcp.types import ToolAnnotations
 
 from . import tools
 from .contracts import (AskInterviews, CheckRewrite, GetTranscript, HypothesisText, InterviewId, InterviewIds,
-                        MaxTurns, Question, RewriteText, Speaker, TalkRatio, TopK, Verdict)
+                        MaxTurns, Question, Quote, RewriteText, Speaker, TalkRatio, TopK, Verdict,
+                        VerifyQuote)
 
 mcp = MCPServer("groundwork", instructions="Customer-interview evidence for founders. Tools read "
                                            "transcripts by interview id and give physical line numbers "
@@ -78,6 +79,11 @@ def check_rewrite(hypothesis: HypothesisText, verdict: Verdict, rewrite: Rewrite
 def ask_interviews(question: Question, founder: Founder, interviews: InterviewIds = None,
                    k: TopK = 5) -> tools.AskOut:
     return _run(tools.ask_interviews, AskInterviews(question=question, interviews=interviews, k=k), founder)
+
+
+@mcp.tool(annotations=READS, description=describe("verify_quote"))
+def verify_quote(interview_id: InterviewId, quote: Quote, founder: Founder) -> tools.QuoteCheck:
+    return _run(tools.verify_quote, VerifyQuote(interview_id=interview_id, quote=quote), founder)
 
 
 if __name__ == "__main__":

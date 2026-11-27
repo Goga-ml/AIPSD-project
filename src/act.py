@@ -18,7 +18,7 @@ from pydantic import ValidationError
 
 from .tools import Tool, ToolFailure, caller_key
 
-FREE_TEXT: set[str] = {"hypothesis", "rewrite"}     # customers' or founders' words: logged as a length, never as text
+FREE_TEXT: set[str] = {"hypothesis", "rewrite", "quote"}     # customers' or founders' words: logged as a length, never as text
 
 
 def _log_path() -> Path:

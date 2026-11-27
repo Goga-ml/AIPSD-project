@@ -1,0 +1,52 @@
+# HW2 tool golden set · verify_quote · owner: heinrichcorneliusagrippa
+# Runs in CI through tests/test_tool_golden.py. No model, no key. Transcripts: data/transcripts/ (shared).
+tool_owner: heinrichcorneliusagrippa
+cases:
+  - id: q1
+    type: normal
+    why: the everyday case; an exact Customer quote is supported and cited to its line
+    tool: verify_quote
+    caller: founder-test
+    arguments: {interview_id: interview_01, quote: "We pay 45 GEL a month for a POS add-on"}
+    expect: ok
+    result_has: {supported: true, citation: {interview_id: interview_01, line: 11}, match_score: 100.0}
+  - id: q2
+    type: normal
+    why: a model tidying a quote ("add-on" -> "addon") still passes the 90 threshold, same line
+    tool: verify_quote
+    caller: founder-test
+    arguments: {interview_id: interview_01, quote: "We pay 45 GEL a month for a POS addon"}
+    expect: ok
+    result_has: {supported: true, best_line: 11}
+  - id: q3
+    type: normal
+    why: the interviewer's own words are not evidence, even when they are in the transcript word for word
+    tool: verify_quote
+    caller: founder-test
+    arguments: {interview_id: interview_01, quote: "Wouldn't an app that predicts stock be great for you?"}
+    expect: ok
+    result_has: {supported: false, citation: null, reason: quote_not_found}
+  - id: b1
+    type: bad-input
+    why: a quote that spans two turns (a newline inside) never reaches the matcher
+    tool: verify_quote
+    caller: founder-test
+    arguments: {interview_id: interview_01, quote: "Sure, sounds nice.\nA paper sheet on the fridge"}
+    expect: refused
+    error_has: [invalid arguments, quote]
+  - id: a1
+    type: adversarial
+    why: a real Customer sentence with an invented spending claim glued on; partial_ratio alone scores it 100
+    tool: verify_quote
+    caller: founder-test
+    arguments: {interview_id: interview_01, quote: "A paper sheet on the fridge, and I text my supplier every Thursday. and I spend 300 GEL a month on a stock app."}
+    expect: ok
+    result_has: {supported: false, best_line: 9, reason: quote_not_found}
+  - id: a2
+    type: adversarial
+    why: the model names another founder to check their interviews; extra="forbid" refuses the field
+    tool: verify_quote
+    caller: founder-test
+    arguments: {interview_id: interview_01, quote: "We pay 45 GEL a month for a POS add-on", founder: someone-else}
+    expect: refused
+    error_has: [invalid arguments, founder]
