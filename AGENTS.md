@@ -31,3 +31,4 @@ run:      uvicorn src.app:app --reload        (caller: X-Founder header, a stand
 - Add a tool that deletes or sends without asking first
 - Store a raw founder or session id, a recording, or anything the founder did not state (docs/state-contract.md)
 - Add a memory write the founder did not ask for
+- Run a tool in NEEDS_YES from inside a loop: park it and wait for confirm() (src/agent.py); never put it in TOOLS

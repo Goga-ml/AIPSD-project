@@ -5,6 +5,8 @@ docs/state-contract.md is the human-readable version of this table; the two must
   turn     one session     24 hours   every chat turn (both sides)      expiry, or DELETE /me/memory
   focus    one founder     30 days    only when the founder asks        expiry, or DELETE /me/memory
                                       (the remember_focus tool)
+  evidence one founder     180 days   only after the founder confirms   expiry, or DELETE /me/memory
+                                      (save_evidence, via confirm())
 
 Rules that hold everywhere in this file:
   * the key holds a hash (tools.caller_key), never the founder or session id itself
@@ -26,6 +28,8 @@ from .tools import caller_key
 
 TURN_LIFETIME = timedelta(hours=24)       # a working session, then it is gone
 FOCUS_LIFETIME = timedelta(days=30)       # about one round of interviews; refreshed when repeated
+EVIDENCE_LIFETIME = timedelta(days=180)   # a discovery phase; decision 0004
+MAX_EVIDENCE = 200
 MAX_TURNS = 6                             # context budget for history: three exchanges
 MAX_TURN_CHARS = 2000
 
@@ -106,15 +110,36 @@ def focus(founder: str) -> str | None:
     return rows[0]["value"] if rows else None
 
 
+# ---------------------------------------------------------------- evidence board (scope: one founder)
+
+def save_evidence(founder: str, item: dict) -> bool:
+    """Add one verified quote to the founder's board. Idempotent: the same line and kind twice is stored once.
+    Returns False when it was already there."""
+    import json
+    key = _founder_key(founder)
+    value = json.dumps(item, sort_keys=True)
+    if any(r["value"] == value for r in _get(key, "evidence", MAX_EVIDENCE)):
+        return False
+    _put(key, "evidence", value, EVIDENCE_LIFETIME)
+    return True
+
+
+def evidence(founder: str) -> list[dict]:
+    import json
+    return [json.loads(r["value"]) for r in reversed(_get(_founder_key(founder), "evidence", MAX_EVIDENCE))]
+
+
 # ---------------------------------------------------------------- deletion and expiry
 
 def forget(founder: str | None, session: str | None) -> dict:
     """Everything for this founder and this session, now. Called by DELETE /me/memory; no model involved."""
-    counts = {"focus": 0, "turns": 0}
+    counts = {"focus": 0, "evidence": 0, "turns": 0}
     with _conn() as c:
         if founder:
             counts["focus"] = c.execute("DELETE FROM memory WHERE key=? AND kind='focus'",
                                         (_founder_key(founder),)).rowcount
+            counts["evidence"] = c.execute("DELETE FROM memory WHERE key=? AND kind='evidence'",
+                                           (_founder_key(founder),)).rowcount
         if session:
             counts["turns"] = c.execute("DELETE FROM memory WHERE key=? AND kind='turn'",
                                         (_session_key(session),)).rowcount

@@ -18,8 +18,8 @@ from pydantic import BaseModel
 from shared.transcript import parse_transcript
 
 from . import ask, coach, verify
-from .contracts import (AskInterviews, CheckRewrite, Contract, GetTranscript, RememberFocus, TalkRatio,
-                        VerifyQuote)
+from .contracts import (AskInterviews, CheckRewrite, Contract, GetTranscript, RememberFocus, SaveEvidence,
+                        TalkRatio, VerifyQuote)
 
 ROOT = Path(__file__).resolve().parents[1]
 META_KEYS = ("segment", "date", "role")          # INTERFACES.md section 3: the only header keys
@@ -237,6 +237,32 @@ def remember_focus(args: RememberFocus, caller: str) -> FocusStored:
     return FocusStored(segment=stored, lifetime="30 days", delete_with="DELETE /me/memory")
 
 
+# ---------------------------------------------------------------- save_evidence (Lab 7 · team, needs a yes)
+
+class EvidenceSaved(BaseModel):
+    citation: Citation
+    kind: str
+    quote: str
+    added: bool                 # False: it was already on the board (saving twice changes nothing)
+
+
+def save_evidence(args: SaveEvidence, caller: str) -> EvidenceSaved:
+    """Writes to the founder's evidence board. Run only by confirm() in src/agent.py, after the founder's yes.
+    The quote is verified again here (src/verify.py): the model proposed it, code decides."""
+    from . import memory
+    path = transcripts_dir(caller) / f"{args.interview_id}.txt"   # safe: the id matched ^interview_[0-9]{2}$
+    if not path.is_file():
+        raise ToolFailure(f"There is no interview {args.interview_id}. Nothing was saved.")
+    m = verify.best_match(args.quote, parse_transcript(path))
+    if not verify.is_supported(m):
+        raise ToolFailure(f"That quote is not in a Customer turn of {args.interview_id} (best match {m.score}). "
+                          "Nothing was saved; do not propose it again.")
+    cite = Citation(interview_id=args.interview_id, line=m.line)
+    added = memory.save_evidence(caller, {"interview_id": cite.interview_id, "line": cite.line,
+                                          "kind": args.kind, "quote": args.quote})
+    return EvidenceSaved(citation=cite, kind=args.kind, quote=args.quote, added=added)
+
+
 # ---------------------------------------------------------------- the registry
 
 @dataclass(frozen=True)
@@ -268,3 +294,10 @@ def tools_for(caller: str | None) -> dict[str, Tool]:
     """Least privilege by construction: transcripts are customers' words, so a caller who is
     not signed in is offered no tool that needs a caller."""
     return {n: t for n, t in TOOLS.items() if caller or not t.needs_caller}
+
+
+# Tools a model may PROPOSE but never run. They are not in TOOLS, so call_tool() through /act, /chat or
+# the MCP server can never reach them. Only confirm() in src/agent.py runs them, after a person's yes.
+PROPOSE_ONLY = {t.name: t for t in [
+    Tool("save_evidence", SaveEvidence, save_evidence, writes=True),
+]}

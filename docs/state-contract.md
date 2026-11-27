@@ -6,6 +6,7 @@
 |---|---|---|---|---|---|---|
 | Conversation turns: the founder's question and Groundwork's answer, at most 2,000 characters each | A follow-up ("and in the bakery interview?") needs the last few turns; at most 6 go into the prompt | This session only: key `session:<hash of X-Session-Id>` | 24 hours | Automatically, after every chat turn, both sides. Not when the answer was the router's sorry sentence | Expiry (read filter, and `expire()` at startup), or `DELETE /me/memory` | `$GROUNDWORK_STATE_DIR/memory.db` (SQLite, git-ignored), table `memory`, kind `turn` |
 | The founder's focus segment, like `independent bakery owners` | Answers and searches lean toward the segment the founder is interviewing now | This founder only: key `founder:<hash of X-Founder>` | 30 days, restarted when the founder sets it again | Only when the founder asks: the `remember_focus` tool (contract `RememberFocus`, caller from the session). One per founder; a new one replaces the old | Expiry, or `DELETE /me/memory` | Same table, kind `focus` |
+| The founder's evidence board: verified Customer quotes, each with its citation and kind (`pain`, `workaround`, `spending`, `commitment`) | The supervised loop (Lab 7) collects evidence; the founder keeps what they confirm | This founder only: key `founder:<hash of X-Founder>` | 180 days ([decision 0004](decisions/0004-evidence-board.md)) | Only after the founder's yes: `save_evidence`, run by `confirm()` (`POST /plan/confirm`), which verifies the quote again. Saving the same line and kind twice stores it once | Expiry, or `DELETE /me/memory` | Same table, kind `evidence` |
 
 ## What we never store
 
@@ -17,9 +18,9 @@
 
 ## How a founder sees and controls it
 
-- **See:** `GET /me/memory` returns the focus segment, how many recent turns are held, both lifetimes, and the delete path.
+- **See:** `GET /me/memory` returns the focus segment, the evidence board, how many recent turns are held, the lifetimes, and the delete path.
 - **After a write:** the `remember_focus` result names what was stored, for how long, and `DELETE /me/memory`; the model is told to say so.
-- **Forget me:** `DELETE /me/memory` deletes this founder's focus row and this session's turns, now, and returns the counts, like `{"focus": 1, "turns": 2}`. No model is involved (`test_forget_me_returns_counts_empties_the_next_read_and_needs_no_model`). Rows are removed, not flagged.
+- **Forget me:** `DELETE /me/memory` deletes this founder's focus row and evidence board and this session's turns, now, and returns the counts, like `{"focus": 1, "evidence": 3, "turns": 2}`. No model is involved (`test_forget_me_returns_counts_empties_the_next_read_and_needs_no_model`). Rows are removed, not flagged.
 
 ## Known limits
 

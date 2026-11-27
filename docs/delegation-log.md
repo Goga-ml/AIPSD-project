@@ -103,3 +103,17 @@ One entry per team-level delegation that mattered. Feature-level delegations are
 - **Decision:** pull request for #41, stacked on #40. The live checkpoint (a streamed answer from a real model) waits for `OPENROUTER_API_KEY`.
 - **AGENTS.md change:** Never: store a raw id or anything the founder did not state; add a memory write the founder did not ask for. Conventions: only `src/memory.py` stores state.
 - **Cost:** one session, no model calls.
+
+### Entry 10 · Lab 7: the supervised loop
+- **Task:** issue #45: `docs/agent-contract.md`, `src/agent.py` from the course starter, the `save_evidence` tool in a propose-only registry, the evidence board in `src/memory.py` (decision 0004, a third state-contract row), `POST /plan` and `POST /plan/confirm`, `tests/test_agent.py`, one AGENTS.md Never line.
+- **Delegated to:** Claude Code (Claude Opus 5.5), driven by Goga. Context: `Lab-7/README.md`, the starter, test and contract templates, and our merged Lab 5 and Lab 6 code.
+- **Plan check:** no written plan. The goal and the action that waits for a yes were chosen without a team vote; they are in the contract and decision 0004.
+- **Came back wrong / at risk:**
+  - Putting `save_evidence` in `TOOLS`, like every other tool, would have let `/act`, `/chat` and the MCP server run it with no yes. It lives in `PROPOSE_ONLY`; only `confirm()` runs it. `test_save_evidence_is_in_no_other_door`.
+  - The first `/plan/confirm` paired results with ids by position (`zip`), which mislabels them when only some ids are approved. `confirm()` now returns each result with its own id. `test_only_the_approved_ids_run`.
+  - `DELETE /me/memory` now returns an `evidence` count, so two Lab 6 tests that compare the whole counts dict were extended with `"evidence": 0`.
+  - The gate was broken on purpose (the loop runs `save_evidence` instead of parking it): 7 of 11 agent tests went red, including the template's gate test.
+- **Caught by:** reading where call_tool's registry comes from; reading the confirm endpoint before testing it; the Lab 6 tests; the deliberate break.
+- **Decision:** pull request for #45, stacked on #43. The live checkpoint (a real run that returns `needs_confirmation`) waits for `OPENROUTER_API_KEY`.
+- **AGENTS.md change:** Never run a tool in `NEEDS_YES` from inside a loop; never put it in `TOOLS`.
+- **Cost:** one session, no model calls.
