@@ -11,3 +11,13 @@ One entry per team-level delegation that mattered. Feature-level delegations are
 - **Decision:** opened as a pull request for review before the tag.
 - **AGENTS.md change:** none (no team-level AGENTS.md yet).
 - **Cost:** one session.
+
+### Entry 2 · Skeleton, one_call and CI
+- **Task:** issue #13, PR #14: `requirements.txt`, `src/llm.py` with `one_call(messages, tools, timeout=..., model=...)` in the shape `Lab-8/templates/one_call.py` asks for, offline tests, `.github/workflows/ci.yml` from `Lab-2/templates/ci.yml`, `AGENTS.md` and `CLAUDE.md`. This is the frame for the Lab 5 to 8 catch-up and HW2.
+- **Delegated to:** Claude Code (Claude Opus 5.5), driven by Goga. Context: the Lab 2, 5 and 8 READMEs and templates, `docs/TEAM-REPO.md`, decision 0003 and `hw1/Goga-ml/src/llm.py`.
+- **Plan check:** agreed a task list (skeleton and CI for Goga, gates for Dachi, MCP server for Otar, router for Petre) before any file was written; no written plan for the code itself. Two choices made along the way: Gemini stays the default (decision 0003), with OpenRouter used when its key is set, because the Lab 8 chain needs two companies; and `tests/test_tool_golden.py` was left out because it imports `src/act.py`, which does not exist yet, and would turn CI red.
+- **Came back wrong:** the first CI run failed with `ModuleNotFoundError: No module named 'src'`. The tests had passed locally only because they were run with `python -m pytest`, which puts the repo root on the path; CI runs plain `pytest`. Fixed with `pythonpath = .` in `pytest.ini`, after reproducing the failure locally with plain `pytest`.
+- **Caught by:** CI on the pull request.
+- **Decision:** fixed on the same branch; CI green; waiting for a teammate's review and squash-merge.
+- **AGENTS.md change:** created it, with the Never lines from Lab 5 (no identity in tool arguments; no tool that deletes or sends without asking) and the Always line from Lab 8 (every model call through `complete()` in `src/router.py`). Lesson for next time: run tests exactly as CI does (`pytest`, not `python -m pytest`) before pushing.
+- **Cost:** one session, one red CI run.
