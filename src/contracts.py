@@ -12,7 +12,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-InterviewId = Annotated[str, Field(pattern=r"^interview_\d{2}$",
+# [0-9], not \d: \d also matches digits from other scripts (interview_٠١), which are never real ids.
+InterviewId = Annotated[str, Field(pattern=r"^interview_[0-9]{2}$",
                                    description="Interview id: the file name without .txt, like interview_01")]
 Speaker = Annotated[Literal["Interviewer", "Customer"],
                     Field(description="Only this speaker's turns. Leave out for both")]
@@ -29,3 +30,9 @@ class GetTranscript(Contract):
     interview_id: InterviewId
     speaker: Speaker | None = None
     max_turns: MaxTurns = 100
+
+
+class TalkRatio(Contract):
+    """Talk ratio for one customer interview: how many words the interviewer and the customer spoke,
+    and the interviewer's share, counted by code and never estimated. Reads only, changes nothing."""
+    interview_id: InterviewId
