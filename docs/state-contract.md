@@ -12,7 +12,7 @@
 
 - The founder id or the session id themselves: every key holds a 12-character SHA-256 prefix (`caller_key` in `src/tools.py`), as the tool log already does. `test_keys_hold_a_hash_never_the_id`.
 - Anything the model inferred about the founder that they did not state. The focus segment is written only by a tool the founder has to ask for, and the system prompt says so.
-- Customers' words outside a turn. A quote in an answer lives in that turn for 24 hours; it is never copied into a founder row.
+- Customers' words outside a turn, unless the founder confirmed them. A quote in an answer lives in that turn for 24 hours. The only founder row that holds customers' words is the evidence board, and only quotes the founder said yes to, each verified against the transcript at that moment.
 - One founder's rows in another founder's prompt: `build_messages()` reads the focus for this founder and the turns for this session only. `test_scope_one_founders_memory_never_reaches_another`.
 - Anything from a visitor (no `X-Founder`, no `X-Session-Id`): nothing is written. `test_a_visitor_leaves_nothing_behind`.
 
