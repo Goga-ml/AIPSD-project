@@ -36,3 +36,23 @@ class TalkRatio(Contract):
     """Talk ratio for one customer interview: how many words the interviewer and the customer spoke,
     and the interviewer's share, counted by code and never estimated. Reads only, changes nothing."""
     interview_id: InterviewId
+
+
+# ---------------------------------------------------------------- check_rewrite (HW2 · Petre)
+
+ONE_LINE = r"^\S(?:[^\x00-\x1f\x7f]*\S)?$"       # no line breaks or control characters, no outer spaces
+HypothesisText = Annotated[str, Field(min_length=1, max_length=500, pattern=ONE_LINE,
+                                      description="The founder's hypothesis, exactly as they wrote it, on one line")]
+Verdict = Annotated[Literal["falsifiable", "vague"], Field(description="Your verdict on the hypothesis")]
+RewriteText = Annotated[str, Field(min_length=1, max_length=1000, pattern=ONE_LINE,
+                                   description="Your rewrite. Needed when the verdict is vague. Every detail "
+                                               "the founder did not state goes in [square brackets]")]
+
+
+class CheckRewrite(Contract):
+    """Check your verdict and rewrite of a founder's hypothesis before you show them: a falsifiable
+    hypothesis comes back in the founder's exact words, and a rewrite may only state numbers the
+    founder wrote or numbers inside [square brackets]. Reads nothing, changes nothing."""
+    hypothesis: HypothesisText
+    verdict: Verdict
+    rewrite: RewriteText | None = None
