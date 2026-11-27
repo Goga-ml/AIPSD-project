@@ -1,8 +1,8 @@
 # HW2 · Tool Contract · `talk_ratio`
 
 **Tool:** `talk_ratio` · **Owner:** `Ghmertoto` (Otar Khunashvili) · **Team repo:** https://github.com/Goga-ml/AIPSD-project
-**Code on `main`:** contract class `TalkRatio` in `src/contracts.py` line `<TODO, 35 on the branch>` · function `talk_ratio` in `src/tools.py` line `<TODO, 89 on the branch>` (the counting is `talk_ratio` in `src/coach.py` line 14) · registry entry in `src/tools.py` (`TOOLS`) · MCP registration in `src/mcp_server.py`
-**Product pull request:** `#<TODO>` · merged commit `<TODO short SHA>`
+**Code on `main`:** contract class `TalkRatio` in [`src/contracts.py` line 35](https://github.com/Goga-ml/AIPSD-project/blob/b4f4d1e/src/contracts.py#L35) · function `talk_ratio` in [`src/tools.py` line 89](https://github.com/Goga-ml/AIPSD-project/blob/b4f4d1e/src/tools.py#L89) (the counting is `talk_ratio` in [`src/coach.py` line 14](https://github.com/Goga-ml/AIPSD-project/blob/b4f4d1e/src/coach.py#L14)) · registry entry in [`src/tools.py` line 125](https://github.com/Goga-ml/AIPSD-project/blob/b4f4d1e/src/tools.py#L125) (`TOOLS`) · MCP registration in [`src/mcp_server.py` line 68](https://github.com/Goga-ml/AIPSD-project/blob/b4f4d1e/src/mcp_server.py#L68)
+**Product pull request:** [#21](https://github.com/Goga-ml/AIPSD-project/pull/21) · merged commit `b4f4d1e` · the MCP server it plugs into: [#23](https://github.com/Goga-ml/AIPSD-project/pull/23), merged commit `a43b2a7`
 
 **In one sentence, for the model:** "Talk ratio for one customer interview: how many words the interviewer and the customer spoke, and the interviewer's share, counted by code and never estimated. Reads only, changes nothing."
 

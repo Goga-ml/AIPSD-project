@@ -17,13 +17,27 @@ Actual results are pasted from a run of every case through `call_tool()` on 27 N
 
 **The adversarial cases, in one sentence each:** t5 is a model (or text a founder pasted) trying to make the tool open our key file instead of a transcript; t6 is one founder naming another founder in the arguments to read that founder's customer interview; t7 is an instruction glued to a real id, hoping the tool reads the id and the model reads the rest; t8 is a visitor who never signed in asking for a customer's words.
 
-**The red run.** Branch `<TODO>` · what I weakened: `<TODO one-line diff>` · pull request `#<TODO>` (closed, not merged) · run link `<TODO>` · tests that failed: `<TODO paste>` · text on the merge button: `<TODO paste>`
+**The red run.**
+- Branch: `hw2-Ghmertoto-red` (`main` plus one line)
+- What I weakened, the whole diff (1 file, +1 −0), in `class TalkRatio` in `src/contracts.py`:
+  ```diff
+  +    model_config = ConfigDict(extra="allow")
+  ```
+- Pull request: [#24](https://github.com/Goga-ml/AIPSD-project/pull/24) (closed, not merged)
+- Run link: https://github.com/Goga-ml/AIPSD-project/actions/runs/46037904691 (the `pull_request` run; the `push` run on the same commit also failed: https://github.com/Goga-ml/AIPSD-project/actions/runs/46037901120)
+- Tests that failed, pasted from the run:
+  ```
+  FAILED tests/test_talk_ratio.py::test_the_contract_has_one_argument_and_forbids_the_rest - AssertionError
+  FAILED tests/test_tool_golden.py::test_tool_golden_case[Ghmertoto:t6] - AssertionError: Ghmertoto:t6 should be refused but ran: {'interview_id': 'interview_01', 'interviewer_words': 78, 'customer_words': 115, 'interviewer_share': 0.4, 'ratio': '40:60'}
+  ```
+- Merge state reported by GitHub for the pull request: `mergeStateStatus: BLOCKED`, check `test` failed
+- Text on the merge button: `<TODO: paste the exact text from the pull request page>`
 
-*Rehearsed locally before the real run: with `model_config = ConfigDict(extra="allow")` added to `TalkRatio`, 2 of 58 tests failed: `tests/test_talk_ratio.py::test_the_contract_has_one_argument_and_forbids_the_rest` and `tests/test_tool_golden.py::test_tool_golden_case[Ghmertoto:t6]`.*
+*The same weakening run locally: 2 failed, 59 passed.*
 
-**What the red run taught me.** `<TODO: rewrite after the real run, in my own words.>` From the rehearsal: I expected removing `extra="forbid"` to break all the adversarial cases. It broke one. The path case (t5) and the injected-instruction case (t7) stayed green, because the pattern on `interview_id` stops them and `extra="forbid"` has nothing to do with it. The visitor case (t8) stayed green because `tools_for()` stops it before the contract is even read. Only t6, the other founder's identity, depends on `extra="forbid"`. So the rule I thought was "the security rule" protects exactly one of my four attacks, and each case in the file is tied to one rule.
+**What the red run taught me.** `<TODO: reword in my own words.>` Two things I did not know before. First, I expected removing `extra="forbid"` to break all the adversarial cases. It broke one. The path case (t5) and the injected-instruction case (t7) stayed green, because the pattern on `interview_id` stops them and `extra="forbid"` has nothing to do with it. The visitor case (t8) stayed green because `tools_for()` stops it before the contract is even read. Only t6, the other founder's identity, depends on `extra="forbid"`: the failing test says the tool "should be refused but ran" and returned the other call's real numbers. So the rule I thought was "the security rule" protects exactly one of my four attacks. Second, my first red pull request was blocked for the wrong reason. `main` had moved while it was open, GitHub showed merge conflicts, and the `pull_request` CI run did not start at all; only the `push` run was red. A pull request that cannot merge because of conflicts proves nothing about the gate. I rebuilt the branch as `main` plus the one line, and only then was the block caused by the failed check.
 
-**The green run.** Product pull request `#<TODO>` · run link `<TODO>` · last line of pytest: `<TODO, locally it was "58 passed in 1.68s">`
+**The green run.** Product pull request [#21](https://github.com/Goga-ml/AIPSD-project/pull/21) · run link https://github.com/Goga-ml/AIPSD-project/actions/runs/46037688897 · last line of pytest: `<TODO: paste from the run page; locally on the same code it was "61 passed in 1.55s">`
 
 **Through the MCP door.** Client: `<TODO: Claude Code>` · the sentence I typed: `<TODO>` · the tool calls it made, in order: `<TODO>`
 
