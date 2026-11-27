@@ -74,5 +74,5 @@ Each member wraps the function from their own task in `TEAM-CONTRACT.md`. No two
 |---|---|---|---|---|
 | Goga | @Goga-ml | Task 4 · ask across interviews (RAG lookup) | | reads |
 | Petre | @Petre-Kharazashvili | Task 2 · hypothesis linter | | reads |
-| Otar | @Ghmertoto | Task 3 · interview technique coach (talk ratio, question labels) | | reads |
+| Otar | @Ghmertoto | Task 3 · interview technique coach (talk ratio, question labels) | `talk_ratio` | reads |
 | Dachi | @heinrichcorneliusagrippa | Task 1 · verified evidence extraction (quote check) | `verify_quote` | reads |
