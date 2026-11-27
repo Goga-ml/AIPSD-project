@@ -1,0 +1,31 @@
+"""Tool contracts: what each tool accepts, as types the code checks. Spec: docs/tool-contracts.md.
+
+One source of truth, two doors:
+  * src/tools.py builds the function-calling schema from the contract classes below
+  * src/mcp_server.py builds the MCP tools from the same type aliases
+Rules for every contract:
+  * extra="forbid": an argument we did not ask for is refused, never ignored
+  * every string has a pattern or a fixed set of values; every number has bounds
+  * no user, founder, student or account field. Identity comes from the session (src/act.py).
+"""
+from typing import Annotated, Literal
+
+from pydantic import BaseModel, ConfigDict, Field
+
+InterviewId = Annotated[str, Field(pattern=r"^interview_\d{2}$",
+                                   description="Interview id: the file name without .txt, like interview_01")]
+Speaker = Annotated[Literal["Interviewer", "Customer"],
+                    Field(description="Only this speaker's turns. Leave out for both")]
+MaxTurns = Annotated[int, Field(ge=1, le=200, description="How many turns to return, 1 to 200")]
+
+
+class Contract(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class GetTranscript(Contract):
+    """Read one customer interview: every turn with its speaker and its line number, for citations
+    like [interview_01:L11]. Reads only, changes nothing."""
+    interview_id: InterviewId
+    speaker: Speaker | None = None
+    max_turns: MaxTurns = 100
