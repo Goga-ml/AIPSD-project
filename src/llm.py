@@ -50,7 +50,8 @@ def _get_client():
     return _client
 
 
-def log_usage(feature: str, model: str, tokens_in: int, tokens_out: int, cost_usd: float, latency_ms: int) -> None:
+def log_usage(feature: str, model: str, tokens_in: int, tokens_out: int, cost_usd: float, latency_ms: int,
+              ttft_ms: int | None = None) -> None:
     path = _log_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     line = {
@@ -62,6 +63,8 @@ def log_usage(feature: str, model: str, tokens_in: int, tokens_out: int, cost_us
         "cost_usd": round(cost_usd, 6),
         "latency_ms": latency_ms,
     }
+    if ttft_ms is not None:
+        line["ttft_ms"] = ttft_ms           # streams only: time to the first piece of text
     with path.open("a", encoding="utf-8") as f:
         f.write(json.dumps(line) + "\n")
 
@@ -95,6 +98,77 @@ def one_call(messages: list[dict], tools: list[dict] | None = None, timeout: flo
     reasoning = getattr(message, "reasoning_details", None) or (getattr(message, "model_extra", None) or {}).get("reasoning_details")
     return {"content": message.content, "tool_calls": calls, "reasoning_details": reasoning,
             "usage": {"tokens_in": tokens_in, "tokens_out": tokens_out, "cost_usd": cost}}
+
+
+# ---------------------------------------------------------------- streaming (Lab 6)
+
+class Stream:
+    """Iterate it for pieces of text as they arrive. After the loop: .text, .tool_calls (fragments
+    stitched by index), .reasoning_details, .tokens_in/.tokens_out, .cost_usd and .ttft_ms.
+    Usage is logged once, after the last chunk, with ttft_ms, even when the model only asked for a tool."""
+
+    def __init__(self, chunks, model: str, feature: str, t0: float, degraded: bool = False):
+        self._chunks, self.model, self.feature, self._t0 = chunks, model, feature, t0
+        self.degraded = degraded
+        self.text, self.ttft_ms, self.reasoning_details = "", None, None
+        self.tokens_in = self.tokens_out = 0
+        self.cost_usd = 0.0
+        self._calls: dict[int, dict] = {}
+
+    @property
+    def tool_calls(self) -> list[dict]:
+        return [self._calls[i] for i in sorted(self._calls)]
+
+    def __iter__(self):
+        usage = None
+        for chunk in self._chunks:
+            usage = getattr(chunk, "usage", None) or usage
+            if not getattr(chunk, "choices", None):
+                continue
+            delta = chunk.choices[0].delta
+            extra = getattr(delta, "reasoning_details", None) or (getattr(delta, "model_extra", None) or {}).get("reasoning_details")
+            if extra:
+                self.reasoning_details = (self.reasoning_details or []) + list(extra)
+            for frag in getattr(delta, "tool_calls", None) or []:
+                call = self._calls.setdefault(frag.index, {"id": "", "name": "", "arguments": ""})
+                call["id"] = frag.id or call["id"]
+                if frag.function is not None:
+                    call["name"] += frag.function.name or ""
+                    call["arguments"] += frag.function.arguments or ""
+            if getattr(delta, "content", None):
+                if self.ttft_ms is None:
+                    self.ttft_ms = round((time.perf_counter() - self._t0) * 1000)
+                self.text += delta.content
+                yield delta.content
+        self._finish(usage)
+
+    def _finish(self, usage) -> None:
+        if self.degraded:
+            return                                   # the router's sentence: no model was paid
+        self.tokens_in = getattr(usage, "prompt_tokens", 0) or 0
+        self.tokens_out = getattr(usage, "completion_tokens", 0) or 0
+        cost = getattr(usage, "cost", None)
+        self.cost_usd = cost if cost is not None else (self.tokens_in * PRICE_IN + self.tokens_out * PRICE_OUT) / 1_000_000
+        log_usage(self.feature, self.model, self.tokens_in, self.tokens_out, self.cost_usd,
+                  round((time.perf_counter() - self._t0) * 1000), ttft_ms=self.ttft_ms)
+
+
+def stream(messages: list[dict], tools: list[dict] | None = None, timeout: float | None = None,
+           model: str | None = None, feature: str = "chat") -> Stream:
+    """Open a streamed model turn. The request is sent here, so a provider that is down fails here,
+    before the first piece, and the router can try the next model. GROUNDWORK_OFFLINE=1: no network."""
+    model = model or CHAT_MODEL
+    t0 = time.perf_counter()
+    if os.environ.get("GROUNDWORK_OFFLINE") == "1":
+        from . import offline
+        return Stream(offline.stream_chunks(messages), "offline", feature, t0)
+    api = _get_client()
+    if timeout is not None:
+        api = api.with_options(timeout=timeout, max_retries=0)
+    chunks = api.chat.completions.create(model=model, messages=messages, stream=True,
+                                         stream_options={"include_usage": True},
+                                         **({"tools": tools} if tools else {}))
+    return Stream(chunks, model, feature, t0)
 
 
 # ---------------------------------------------------------------- embeddings (Task 4)

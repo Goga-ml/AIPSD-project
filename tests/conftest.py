@@ -5,8 +5,18 @@ import tempfile
 _tmp = tempfile.mkdtemp(prefix="groundwork-tests-")
 os.environ["GROUNDWORK_USAGE_LOG"] = os.path.join(_tmp, "usage.jsonl")
 os.environ["GROUNDWORK_TOOL_LOG"] = os.path.join(_tmp, "tools.jsonl")
+os.environ["ROUTER_LOG"] = os.path.join(_tmp, "router.jsonl")
 os.environ.pop("OPENROUTER_API_KEY", None)
 os.environ.pop("GEMINI_API_KEY", None)
 os.environ["GROUNDWORK_EMBED_CACHE"] = os.path.join(_tmp, "embeddings.json")
 os.environ["GROUNDWORK_OFFLINE"] = "1"         # src/offline.py stands in for both model calls
 os.environ["GROUNDWORK_ASK_MIN_SCORE"] = "0.35"  # offline embedder scale: related >= 0.41, off-topic <= 0.29
+os.environ.pop("GROUNDWORK_NOW", None)
+
+import pytest  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def fresh_state(tmp_path, monkeypatch):
+    """Every test starts with an empty memory store (src/memory.py) of its own."""
+    monkeypatch.setenv("GROUNDWORK_STATE_DIR", str(tmp_path / "state"))

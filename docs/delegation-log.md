@@ -89,3 +89,17 @@ One entry per team-level delegation that mattered. Feature-level delegations are
 - **Decision:** pull request for #39. The live checkpoint (a real question that calls a tool) waits for `OPENROUTER_API_KEY`.
 - **AGENTS.md change:** the `run:` command.
 - **Cost:** one session, no model calls.
+
+### Entry 9 · Lab 6: streaming and session state
+- **Task:** issue #41: `docs/state-contract.md`; `stream()` and `Stream` in `src/llm.py` (usage once, after the last chunk, with `ttft_ms`); a streaming chain in `src/router.py`; `src/memory.py`; the `remember_focus` tool; `src/chat.py`; `POST /chat` (SSE), `GET` and `DELETE /me/memory`; `tests/test_state.py`; two AGENTS.md Never lines.
+- **Delegated to:** Claude Code (Claude Opus 5.5), driven by Goga. Context: `Lab-6/README.md`, the templates, `Lab-6/examples/campuspulse-state/`, and our merged tools, router and loop (#40).
+- **Plan check:** no written plan. The remembered row (the founder's focus segment) was chosen without a team vote, to keep moving; it is in the contract and easy to change.
+- **Came back wrong / at risk:**
+  - The router's `summary()` reads `ms` from every `ok` line; a streamed `ok` line has none and would have crashed the Lab 8 table. Streams log `stream_ok` instead.
+  - `src/memory.py` imports `caller_key` from `src/tools.py`, and the new tool in `src/tools.py` needs `src/memory.py`: a circular import, solved by importing `memory` inside `remember_focus()`.
+  - `test_mcp.py` asserted that every tool is read-only. `remember_focus` writes, so the test now checks that the annotation matches `Tool.writes`; every read-only tool is still checked exactly as before.
+  - All 166 tests passed on the first run, so the store was broken on purpose: ignoring expiry turns `test_lifetime_is_enforced` red; dropping the founder from the focus key turns 5 tests red, including the scope test.
+- **Caught by:** reading `summary()` before adding the stream outcome; the import error; the MCP test; the two deliberate breaks.
+- **Decision:** pull request for #41, stacked on #40. The live checkpoint (a streamed answer from a real model) waits for `OPENROUTER_API_KEY`.
+- **AGENTS.md change:** Never: store a raw id or anything the founder did not state; add a memory write the founder did not ask for. Conventions: only `src/memory.py` stores state.
+- **Cost:** one session, no model calls.

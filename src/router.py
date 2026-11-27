@@ -66,6 +66,29 @@ def complete(messages: list[dict], tools: list[dict] | None = None, job: str = "
     return note(job, "exhausted", {"content": SORRY, "tool_calls": [], "degraded": True})
 
 
+def stream(messages: list[dict], tools: list[dict] | None = None, job: str = "chat", open_stream=None):
+    """The chain for a streamed turn (Lab 6). A model is "down" only if it fails before the first piece:
+    the request is sent when the stream is opened, so that is where the chain moves on. A failure in the
+    middle of a stream reaches the caller; the founder has already seen part of the answer. Streams are
+    never cached. Every model down: the sorry sentence, streamed, marked degraded, nobody paid."""
+    from . import llm
+    open_stream = open_stream or llm.stream
+    for place, model in enumerate(CHAINS[job], start=1):
+        try:
+            s = open_stream(messages, tools or [], timeout=TIMEOUT_S, model=model)
+        except Exception as error:
+            if not temporary(error):
+                raise
+            note(job, "failed", model=model, place=place, why=type(error).__name__, stream=True)
+            continue
+        note(job, "stream_ok", model=model, place=place)   # its own outcome: summary() reads ms from "ok"
+        return s
+    note(job, "exhausted", stream=True)
+    from types import SimpleNamespace as NS
+    sorry = NS(usage=None, choices=[NS(delta=NS(content=SORRY, tool_calls=None))])
+    return llm.Stream(iter([sorry]), "none", job, time.perf_counter(), degraded=True)
+
+
 def cost(answer: dict) -> float:
     return (answer.get("usage") or {}).get("cost_usd", 0.0)
 

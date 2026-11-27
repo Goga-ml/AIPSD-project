@@ -55,9 +55,11 @@ def test_both_doors_give_the_model_the_same_description(name):
 
 
 @pytest.mark.parametrize("name", sorted(tools.TOOLS))
-def test_annotations_say_every_tool_only_reads(name):
+def test_annotations_match_what_the_tool_does(name):
+    """Read-only tools say so; a tool that stores something (Tool.writes) does not claim to be read-only.
+    No tool is destructive."""
     notes = run(listed())[name].annotations
-    assert notes.read_only_hint is True and notes.destructive_hint is False
+    assert notes.read_only_hint is (not tools.TOOLS[name].writes) and notes.destructive_hint is False
 
 
 def test_one_call_through_the_client(signed_in):

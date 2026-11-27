@@ -85,3 +85,15 @@ class VerifyQuote(Contract):
     Use it before citing any quote as evidence. supported=false means do not cite it. Reads only, changes nothing."""
     interview_id: InterviewId
     quote: Quote
+
+
+# ---------------------------------------------------------------- remember_focus (Lab 6 · team)
+
+Segment = Annotated[str, Field(min_length=3, max_length=60, pattern=r"^[a-z][a-z -]*[a-z]$",
+                               description="A customer segment in plain lowercase words, like independent bakery owners")]
+
+
+class RememberFocus(Contract):
+    """Remember which customer segment the founder is focusing on, for 30 days. Call it only when the
+    founder asks you to remember it. Tell them what was stored and that DELETE /me/memory removes it."""
+    segment: Segment
