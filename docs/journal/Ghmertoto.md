@@ -4,7 +4,7 @@
 
 ### Week 5 · Tool Contract · written 2026-11-27
 **Where I used it:** the `TalkRatio` contract in `src/contracts.py`, the `talk_ratio` tool in `src/tools.py`, its eight cases in `evals/tools/Ghmertoto.yaml`, and the second door in `src/mcp_server.py`.
-**What I noticed:** I expected the pattern on `interview_id` to be the strict part of the contract. It was not: `^interview_\d{2}$` accepted `interview_٠١`, because `\d` matches digits from any script. And when I removed `extra="forbid"` to rehearse the red run, only 2 of 58 tests failed. The path case (`../../.env`) stayed green, because the pattern stops it, not `extra="forbid"`. Each rule protects against one thing only.
+**What I noticed:** I expected the pattern on `interview_id` to be the strict part of the contract. It was not: `^interview_\d{2}$` accepted `interview_٠١`, because `\d` matches digits from any script. And when I removed `extra="forbid"` to rehearse the red run, only 2 of 61 tests failed. The path case (`../../.env`) stayed green, because the pattern stops it, not `extra="forbid"`. Each rule protects against one thing only.
 **Do differently:** write the adversarial case first and probe every pattern with odd input before I trust it. A pattern I have not attacked is a guess.
 
 ### Week 6 · Session State · written 2026-11-27

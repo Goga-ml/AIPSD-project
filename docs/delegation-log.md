@@ -50,7 +50,7 @@ One entry per team-level delegation that mattered. Feature-level delegations are
   - The first expected numbers for `interview_01` were the ones from Otar's HW1 fixtures (58 and 61 words). The shared transcripts in `data/transcripts/` are longer: 78 and 115.
   - One MCP test could pass without proving anything: it checked that the other founder's id was *not* in a list that would also be empty if the call had failed. It now checks that the list is exactly the server's founder.
 - **Caught by:** reading Dachi's code when it was pushed, then running the tests on it; probing the contract with odd ids (trailing newline, upper case, other digits) instead of trusting the pattern; running the function on the shared transcripts before writing the cases, plus a second count in `tests/test_talk_ratio.py` that does not use the shared parser; rereading each test and asking what it would do if the feature were broken.
-- **Decision:** pattern changed to `[0-9]` with a test for each odd id (this touches one line of Dachi's `InterviewId`); expected numbers taken from the run, not from HW1. Weakening the contract locally (`extra="allow"`) turned 2 of 58 tests red, which is the red run HW2 asks for.
+- **Decision:** pattern changed to `[0-9]` with a test for each odd id (this touches one line of Dachi's `InterviewId`); expected numbers taken from the run, not from HW1. Weakening the contract locally (`extra="allow"`) turned 2 of 61 tests red, which is the red run HW2 asks for.
 - **Review rule:** Otar reviews every line of the diff before a pull request is opened, and nothing is merged that he cannot explain line by line.
 - **AGENTS.md change:** none.
 - **Cost:** one session.
