@@ -75,3 +75,4 @@ class AskInterviews(Contract):
     question: Question
     interviews: InterviewIds = None
     k: TopK = 5
+    model_config = ConfigDict(extra="allow")
