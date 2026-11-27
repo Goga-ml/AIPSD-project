@@ -1,6 +1,6 @@
 # Pattern Journal · Petre Kharazashvili · Weeks 5 to 7
 
-*Copied from [`docs/journal/petre-kharazashvili.md`](../../docs/journal/petre-kharazashvili.md). All three entries were written during the team's Lab 5 to Lab 8 catch-up, not in the week of each lecture. Drafted with Claude Code from the work in this repo.*
+*Copied from [`docs/journal/petre-kharazashvili.md`](../../docs/journal/petre-kharazashvili.md). Drafted with Claude Code from the work in this repo.*
 
 ## Week 5 · Tool Contract
 I turned the code half of my HW1 linter into a tool, `check_rewrite`. In HW1 the judging and the checking were one model call behind a web form. Now the model that calls the tool proposes a verdict and a rewrite, and the contract decides what the founder may be shown: one line per field, a verdict from a fixed set, no unknown fields, and no number in a rewrite unless the founder wrote it or it sits in [square brackets]. I delegated the code and the golden cases to Claude Code and verified them by breaking the tool four ways (no pattern, no `extra="forbid"`, no number check, trusting the model's rewrite): each one turned exactly one golden case and one unit test red.
