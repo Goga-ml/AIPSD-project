@@ -1,8 +1,8 @@
 # HW2 · Tool Contract · `check_rewrite` · petre-kharazashvili
 
 **Tool:** `check_rewrite` · **Owner:** `petre-kharazashvili` · **Team repo:** https://github.com/Goga-ml/AIPSD-project
-**Code** (permanent links to the reviewed commit `49e65df`; the same files are on `main` once the pull request is merged): contract class `CheckRewrite` in [`src/contracts.py` line 52](https://github.com/Goga-ml/AIPSD-project/blob/49e65df/src/contracts.py#L43-L58) · function `check_rewrite()` in [`src/tools.py` line 121](https://github.com/Goga-ml/AIPSD-project/blob/49e65df/src/tools.py#L108-L147) · registry entry in the `TOOLS` list of [`src/tools.py`](https://github.com/Goga-ml/AIPSD-project/blob/49e65df/src/tools.py#L165-L169) · MCP registration `check_rewrite()` in [`src/mcp_server.py`](https://github.com/Goga-ml/AIPSD-project/blob/49e65df/src/mcp_server.py#L73-L77)
-**Product pull request:** [#26](https://github.com/Goga-ml/AIPSD-project/pull/26) · head commit `49e65df` · issue [#22](https://github.com/Goga-ml/AIPSD-project/issues/22)
+**Code on `main`:** contract class `CheckRewrite` in [`src/contracts.py`](../../src/contracts.py) line 52 · function `check_rewrite()` in [`src/tools.py`](../../src/tools.py) line 121 · registry entry `Tool("check_rewrite", CheckRewrite, check_rewrite, needs_caller=False)` in the `TOOLS` list of the same file · MCP registration `check_rewrite()` in [`src/mcp_server.py`](../../src/mcp_server.py) line 74
+**Product pull request:** [#26](https://github.com/Goga-ml/AIPSD-project/pull/26) · merged commit [`44a9235`](https://github.com/Goga-ml/AIPSD-project/commit/44a9235) · issue [#22](https://github.com/Goga-ml/AIPSD-project/issues/22)
 **Team copy of this contract:** [`docs/tool-contracts.md`](../../docs/tool-contracts.md), section `check_rewrite`
 
 **In one sentence, for the model** (the docstring of `CheckRewrite`): Check your verdict and rewrite of a founder's hypothesis before you show them: a falsifiable hypothesis comes back in the founder's exact words, and a rewrite may only state numbers the founder wrote or numbers inside [square brackets]. Reads nothing, changes nothing.

@@ -37,7 +37,11 @@ Branch `hw2-petre-kharazashvili-red` · pull request [#27](https://github.com/Go
 
 ## The green run
 
-Product pull request [#26](https://github.com/Goga-ml/AIPSD-project/pull/26) · run on the pull request: https://github.com/Goga-ml/AIPSD-project/actions/runs/46038319348 (conclusion: success) · the same commit `49e65df` on push: https://github.com/Goga-ml/AIPSD-project/actions/runs/46038128371. Last line of the pytest output for that commit, run locally with the CI command: `80 passed`.
+Product pull request [#26](https://github.com/Goga-ml/AIPSD-project/pull/26), merged 27 November 2026 as `44a9235`.
+
+- Run on the pull request: https://github.com/Goga-ml/AIPSD-project/actions/runs/46038319348 (success)
+- Run on `main` after the merge: https://github.com/Goga-ml/AIPSD-project/actions/runs/46039331505 (success)
+- The same code run locally with the CI command (`pytest -q tests`): `80 passed`, including the six cases `petre-kharazashvili:p1` to `p6`
 
 ## The MCP door
 
