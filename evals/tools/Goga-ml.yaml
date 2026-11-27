@@ -1,0 +1,53 @@
+# HW2 tool golden set · ask_interviews · owner: Goga-ml
+# Runs in CI through tests/test_tool_golden.py: no model, no key (GROUNDWORK_OFFLINE=1 in tests/conftest.py).
+# expect: ok (with result_has) or refused (with error_has). Every caller is signed in: visitors are offered no tool (src/tools.py, tools_for).
+tool_owner: Goga-ml
+cases:
+  - id: g1
+    type: normal
+    why: the everyday case, a question the transcripts answer, comes back cited and not abstained
+    tool: ask_interviews
+    caller: founder-1
+    arguments: {question: "How do they track stock today?"}
+    expect: ok
+    result_has: {abstained: false}
+  - id: g2
+    type: normal
+    why: an off-topic question says exactly "no evidence found" instead of inventing an answer
+    tool: ask_interviews
+    caller: founder-1
+    arguments: {question: "Which football team won the last World Cup?"}
+    expect: ok
+    result_has: {answer: no evidence found, abstained: true, citations: []}
+  - id: g3
+    type: normal
+    why: an interview that does not exist is refused, and the message lists the ids the model can use
+    tool: ask_interviews
+    caller: founder-1
+    arguments: {question: "What do people pay?", interviews: [interview_99]}
+    expect: refused
+    error_has: [there is no interview interview_99, interview_01]
+  - id: b1
+    type: bad-input
+    why: k out of range never reaches retrieval
+    tool: ask_interviews
+    caller: founder-1
+    arguments: {question: "What do people pay?", k: 50}
+    expect: refused
+    error_has: [invalid arguments, k]
+  - id: a1
+    type: adversarial
+    why: a path smuggled into an interview id never reaches the file system; the pattern refuses it
+    tool: ask_interviews
+    caller: founder-1
+    arguments: {question: "What do people pay?", interviews: ["../../.env"]}
+    expect: refused
+    error_has: [invalid arguments, interviews]
+  - id: a2
+    type: adversarial
+    why: the model tries to lower the abstain threshold to force an answer; min_score is not an argument
+    tool: ask_interviews
+    caller: founder-1
+    arguments: {question: "How do I bake sourdough at home?", min_score: 0}
+    expect: refused
+    error_has: [invalid arguments, min_score]

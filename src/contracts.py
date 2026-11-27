@@ -36,3 +36,22 @@ class TalkRatio(Contract):
     """Talk ratio for one customer interview: how many words the interviewer and the customer spoke,
     and the interviewer's share, counted by code and never estimated. Reads only, changes nothing."""
     interview_id: InterviewId
+
+
+# ---------------------------------------------------------------- ask_interviews (HW2 · Goga-ml)
+
+Question = Annotated[str, Field(
+    min_length=3, max_length=300, pattern=r"^[^\x00-\x1f\x7f]+$",
+    description="The founder's question in plain words, one line, 3 to 300 characters")]
+InterviewIds = Annotated[list[InterviewId] | None, Field(
+    max_length=10, description="Only search these interviews; leave out to search all")]
+TopK = Annotated[int, Field(ge=1, le=10, description="How many transcript lines to retrieve, 1 to 10")]
+
+
+class AskInterviews(Contract):
+    """Answer a question about what customers said in the founder's interviews, citing transcript lines
+    like [interview_01:L11]. Says exactly "no evidence found" when the transcripts do not answer it.
+    Reads only, changes nothing."""
+    question: Question
+    interviews: InterviewIds = None
+    k: TopK = 5

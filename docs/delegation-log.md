@@ -56,3 +56,16 @@ One entry per team-level delegation that mattered. Feature-level delegations are
 - **Review rule:** Otar reviews every line of the diff before a pull request is opened, and nothing is merged that he cannot explain line by line.
 - **AGENTS.md change:** none.
 - **Cost:** one session.
+
+### Entry 6 · The `ask_interviews` tool (HW2 · Goga-ml)
+- **Task:** issue #25: the `AskInterviews` contract, `ask_interviews` in `src/tools.py` and `src/mcp_server.py`, `src/ask.py` and `src/retrieval.py` (moved from `hw1/Goga-ml/src/`), `src/offline.py`, `embed()` in `src/llm.py`, `tests/test_ask.py`, `evals/tools/Goga-ml.yaml`, and the contract section in `docs/tool-contracts.md`.
+- **Delegated to:** Claude Code (Claude Opus 5.5), driven by Goga. Context: `Lab-5/` of the course repo (brief, templates, CampusPulse example), `hw1/Goga-ml/`, decision 0002, and the merged gates (#18), MCP server (#23) and router (#17).
+- **Plan check:** no written plan. Two choices made along the way: the model cannot set `min_score` (it is not in the contract, and a golden case tries it); embeddings stay on `google-genai`, because decision 0002's 0.65 threshold was measured with its task types.
+- **Came back wrong / at risk:**
+  - The golden cases need an answer without a key, but `ask` makes two model calls. Added offline stand-ins (`GROUNDWORK_OFFLINE=1`) in the CampusPulse pattern. Their scores are on another scale (related 0.41 to 1.0, off-topic 0 to 0.29), so tests set the threshold to 0.35. The offline numbers test the wiring, not retrieval quality.
+  - The first live run hung for over three minutes on a Gemini 503: the chat call had no timeout, so the SDK's default retries applied. A 503 also reached the caller as a stack trace. Expected outages now become a `ToolFailure` with a message for the model, and the chat call goes through the router, which has the limit.
+  - It was first built before the gates existed, on a guessed registry (`writes` instead of `needs_caller`, visitors allowed). Rebuilt on the merged code: a caller from the session picks the workspace, every golden caller is signed in, and ids use `[0-9]{2}`.
+- **Caught by:** running it live (the hang and the 503); a local red run (`extra="allow"` turns 3 of 98 tests red, including golden `a2`); reading the merged gates before adapting.
+- **Decision:** product pull request for #25.
+- **AGENTS.md change:** none. Known exception to "every model call goes through `complete()`": embeddings, because the router has chat jobs only (noted in `src/llm.py`).
+- **Cost:** one session; two live Gemini calls that failed with 503 (embeddings: $0.000139).

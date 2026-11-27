@@ -26,7 +26,8 @@ from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import ToolAnnotations
 
 from . import tools
-from .contracts import GetTranscript, InterviewId, MaxTurns, Speaker, TalkRatio
+from .contracts import (AskInterviews, GetTranscript, InterviewId, InterviewIds, MaxTurns, Question,
+                        Speaker, TalkRatio, TopK)
 
 mcp = MCPServer("groundwork", instructions="Customer-interview evidence for founders. Tools read "
                                            "transcripts by interview id and give physical line numbers "
@@ -67,6 +68,12 @@ def get_transcript(interview_id: InterviewId, founder: Founder, speaker: Speaker
 @mcp.tool(annotations=READS, description=describe("talk_ratio"))
 def talk_ratio(interview_id: InterviewId, founder: Founder) -> tools.TalkRatioOut:
     return _run(tools.talk_ratio, TalkRatio(interview_id=interview_id), founder)
+
+
+@mcp.tool(annotations=READS, description=describe("ask_interviews"))
+def ask_interviews(question: Question, founder: Founder, interviews: InterviewIds = None,
+                   k: TopK = 5) -> tools.AskOut:
+    return _run(tools.ask_interviews, AskInterviews(question=question, interviews=interviews, k=k), founder)
 
 
 if __name__ == "__main__":
