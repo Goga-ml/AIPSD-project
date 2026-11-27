@@ -90,7 +90,10 @@ def one_call(messages: list[dict], tools: list[dict] | None = None, timeout: flo
         cost = (tokens_in * PRICE_IN + tokens_out * PRICE_OUT) / 1_000_000
 
     log_usage(feature, model, tokens_in, tokens_out, cost, latency_ms)
-    return {"content": message.content, "tool_calls": calls,
+    # Gemini 3 through OpenRouter sends reasoning_details with a tool turn and rejects the next call
+    # unless they are echoed back unchanged (src/act.py, as_assistant). Absent elsewhere: None.
+    reasoning = getattr(message, "reasoning_details", None) or (getattr(message, "model_extra", None) or {}).get("reasoning_details")
+    return {"content": message.content, "tool_calls": calls, "reasoning_details": reasoning,
             "usage": {"tokens_in": tokens_in, "tokens_out": tokens_out, "cost_usd": cost}}
 
 
