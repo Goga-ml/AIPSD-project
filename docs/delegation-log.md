@@ -31,3 +31,13 @@ One entry per team-level delegation that mattered. Feature-level delegations are
 - **Decision:** pull request to `main`; waiting for a teammate's review and squash-merge. Otar builds the MCP server on this branch.
 - **AGENTS.md change:** none.
 - **Cost:** one session.
+
+### Entry 4 · Lab 8 fallback router
+- **Task:** Lab 8 Steps 1 to 3 and the offline half of Step 4: `docs/fallback-plan.md`, `src/router.py` from the course starter, `tests/test_router.py`, and the two AGENTS.md lines about model calls.
+- **Delegated to:** Claude Code (Claude Fable 5.2), driven by Petre, at rung 3. Context: `Lab-8/README.md`, the starter and its tests, three Lab 8 resources, `logs/usage.jsonl`, `hw1/petre-kharazashvili/golden.md`, decision 0003, and Goga's skeleton branch (`slice-13-skeleton-ci`).
+- **Plan check:** the task split fixed the scope (router only, no `src/llm.py`). Petre stopped the agent as it started writing the plan and told it to pull first.
+- **Came back wrong:** (1) the agent had branched from `main` before the skeleton existed and named the branch `slice-13-...` on a guess; issue 13 was already Goga's, and the skeleton branch was on the remote by then. (2) The starter imports `src.one_call`, which we do not have; ours is `one_call()` in `src/llm.py`. (3) The starter's 12 second limit would have counted two of our three logged lint calls (26.6 s, 27.8 s) as outages. (4) The live call (Step 2.4, Step 4) was not run by the agent: it had no key in its shell.
+- **Caught by:** (1) pulling, then rebuilding on the skeleton branch and running the suite the way CI does (`pytest -q tests`, 8 passed). (2) reading the starter's ADAPT 0 note against the task split, which puts the call in `src/llm.py`. (3) reading `logs/usage.jsonl` before accepting the default. Also checked that the tests can fail: replacing the `temporary()` check with "always try the next model" turns `test_our_own_bug_is_raised_not_hidden_by_the_next_model` red. (4) is open: Petre runs one real question twice and pastes the two `logs/router.jsonl` lines (`ok` with `place: 1`, then `cache`) into the pull request.
+- **Decision:** opened as a pull request, to merge after the skeleton (#14).
+- **AGENTS.md change:** "Only src/router.py calls one_call() in src/llm.py" and a pointer to `docs/fallback-plan.md`; removed "until the router lands" from the Always line.
+- **Cost:** one session; one rebuild after the pull.
