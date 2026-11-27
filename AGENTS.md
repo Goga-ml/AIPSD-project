@@ -4,6 +4,7 @@ Helps early-stage founders separate real evidence from polite answers in custome
 ## Commands
 install:  pip install -r requirements.txt
 test:     pytest
+run:      uvicorn src.app:app --reload        (caller: X-Founder header, a stand-in for sign-in)
 
 ## Conventions
 - Model id comes from env GROUNDWORK_CHAT_MODEL (default gemini-3.8-flash, decision 0003)

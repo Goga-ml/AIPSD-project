@@ -79,3 +79,13 @@ One entry per team-level delegation that mattered. Feature-level delegations are
 - **Decision:** product pull request; the red run follows on a throwaway branch.
 - **AGENTS.md change:** none. New dependency `rapidfuzz>=3.0` (Ask first): it is the library INTERFACES section 6 already names for Task 1.
 - **Cost:** one session, no model calls (every test is offline).
+
+### Entry 8 · Lab 5 completion: the loop and `POST /act`
+- **Task:** issue #39: `act()` and `as_assistant()` in `src/act.py`, `reasoning_details` passed through by `one_call()`, `src/app.py` with `POST /act`, `tests/test_loop.py`, `fastapi`, `uvicorn` and `httpx` in `requirements.txt`.
+- **Delegated to:** Claude Code (Claude Opus 5.5), driven by Goga. Context: `Lab-5/README.md` Part 2, `Lab-5/examples/campuspulse-tools/src/act.py` and `app.py`, and our merged gates, router and tools.
+- **Plan check:** no written plan. Adapted from the example in two places: the loop calls `complete()` (AGENTS.md), not the model directly, and it returns the router's sorry sentence as `stopped` without running anything.
+- **Came back wrong:** one test passed a stray keyword to `act()` and failed with a TypeError; the first endpoint test patched two things when one was enough. Both rewritten.
+- **Caught by:** running `pytest` as CI does: 142 passed after the fix.
+- **Decision:** pull request for #39. The live checkpoint (a real question that calls a tool) waits for `OPENROUTER_API_KEY`.
+- **AGENTS.md change:** the `run:` command.
+- **Cost:** one session, no model calls.

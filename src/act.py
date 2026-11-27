@@ -6,17 +6,28 @@ Three gates, in order:
   3. identity   the caller comes from the session and is passed in here, never from the arguments
 
 call_tool() never raises. It returns {ok, error, result, ...} and writes one line to logs/tools.jsonl.
-The model loop is not here: every model call goes through complete() in src/router.py.
+
+act() is the loop (Lab 5): send the question and the schemas of the tools THIS caller may use; no
+tool call in the reply means that is the answer; otherwise every call goes through call_tool() and
+its result, or its error, goes back to the model. At most MAX_ROUNDS model turns. Every model call
+goes through complete() in src/router.py.
 """
 import json
 import os
 import time
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
 from pydantic import ValidationError
 
 from .tools import Tool, ToolFailure, caller_key
+
+MAX_ROUNDS = 3                  # a budget: three model turns, then the loop stops and says so
+SYSTEM = """You are Groundwork, a customer-discovery assistant for an early-stage founder.
+Use a tool whenever the question needs the founder's interviews. Never invent a tool result or a quote.
+Cite transcript lines exactly as the tools return them, like [interview_01:L11].
+If a tool returns an error, read it: fix your arguments once, or explain the problem to the founder."""
 
 FREE_TEXT: set[str] = {"hypothesis", "rewrite", "quote"}     # customers' or founders' words: logged as a length, never as text
 
@@ -70,3 +81,51 @@ def _log(call: dict, caller: str | None, t0: float, result: dict | None = None, 
     with path.open("a", encoding="utf-8") as f:
         f.write(json.dumps(line) + "\n")
     return {**line, "result": result}
+
+
+# ---------------------------------------------------------------- the loop
+
+@dataclass
+class Reply:
+    status: str                                        # "answered" or "stopped"
+    text: str
+    calls: list[dict] = field(default_factory=list)    # one entry per tool call, as call_tool returned it
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+def as_assistant(msg: dict) -> dict:
+    """Echo the model's turn back exactly. Gemini 3 needs its reasoning_details returned unchanged
+    between tool turns, or the next call is rejected."""
+    out = {"role": "assistant", "content": msg.get("content"),
+           "tool_calls": [{"id": c["id"], "type": "function",
+                           "function": {"name": c["name"], "arguments": c["arguments"]}}
+                          for c in msg["tool_calls"]]}
+    if msg.get("reasoning_details"):
+        out["reasoning_details"] = msg["reasoning_details"]
+    return out
+
+
+def act(question: str, caller: str | None = None, llm=None) -> Reply:
+    """The caller comes from the request (POST /act, X-Founder), never from the model."""
+    from .router import complete
+    from .tools import tools_for
+    llm = llm or complete
+    allowed = tools_for(caller)
+    schemas = [t.schema() for t in allowed.values()]
+    messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": question}]
+    calls: list[dict] = []
+    for _ in range(MAX_ROUNDS):
+        msg = llm(messages, schemas)
+        if msg.get("degraded"):                        # every model down: the router's sentence, as is
+            return Reply("stopped", msg["content"], calls)
+        if not msg.get("tool_calls"):
+            return Reply("answered", msg.get("content") or "", calls)
+        messages.append(as_assistant(msg))
+        for call in msg["tool_calls"]:
+            outcome = call_tool(call, allowed, caller)
+            calls.append(outcome)
+            messages.append({"role": "tool", "tool_call_id": call["id"],
+                             "content": json.dumps(outcome["result"] if outcome["ok"] else {"error": outcome["error"]})})
+    return Reply("stopped", f"I could not finish that in {MAX_ROUNDS} steps. Nothing was changed.", calls)
