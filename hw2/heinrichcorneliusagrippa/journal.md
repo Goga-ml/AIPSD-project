@@ -1,0 +1,17 @@
+# HW2 · Pattern Journal · Weeks 5, 6 and 7
+
+*Copied from `docs/journal/heinrichcorneliusagrippa.md`.*
+
+*All three entries were written on 27 November 2026, when our team caught up on Labs 5 to 7, not in their own weeks. Drafted with Claude from the actual build; I read and checked every line. One entry per week: the pattern, where I used it, what I noticed, what I would do differently.*
+
+## Week 5 · Tool Contract
+
+**Where I used it:** Task 2, PR #18 (merged): `get_transcript` behind `GetTranscript` (`extra="forbid"`, `interview_id` must match `^interview_\d{2}$`, `max_turns` 1 to 200, no identity field), and `call_tool()` with three gates. Then my HW2 tool, `verify_quote`, which is my HW1 quote check with a contract in front of it. **What I noticed:** the pattern on the id was doing more work than I thought. With it removed, `../../.env` reached the file lookup and only failed because no file had that name. The lookup was not what protected us; the pattern was. The identity rule also bit inside our own tests: a test helper took the session identity as a keyword named `caller`, so a test that sent `caller` as a model argument quietly replaced the session identity instead of being refused. **Do differently:** write the "model cannot set identity" test first, and never give a session value the same name as anything the model can send.
+
+## Week 6 · Session State
+
+**Where I saw it:** we have not built the Lab 6 state store yet; we are in the catching-up row. The one piece of state we do keep is `logs/tools.jsonl`, and it already follows the Lab 6 "never store" rule: the caller is a 12-character hash, and since HW2 the quote is stored as its length (`<38 chars>`), never the customer's words. **What I noticed:** hashing makes the log safer, but it does not make it state with rules. `logs/tools.jsonl` still has no lifetime and no way to delete a founder's lines, and the Lab 6 contract asks exactly those two questions. **Do differently:** before Groundwork remembers anything across turns (for example which interviews a founder is working on), write its row in a state contract first: who can read it, a lifetime with a unit, and a delete path that does not need the model.
+
+## Week 7 · Supervised Autonomy Loop
+
+**Where I saw it:** my HW1 extractor is already a small bounded loop: the model proposes, pydantic and the quote check decide, and on a bad reply it retries with the validator's error, at most `MAX_ATTEMPTS = 3`, then exits 1. `verify_quote` is the same split as a tool: the model can ask, but only code says `supported: true`. **What I noticed:** every Groundwork tool only reads, so a loop over them has nothing to stop for yet. The step budget still matters: without `MAX_ATTEMPTS`, a model that keeps returning bad JSON would cost money forever. **Do differently:** the first tool that sends something (an evidence summary to a co-founder, say) gets its "needs a yes" test in the same pull request, not later.
