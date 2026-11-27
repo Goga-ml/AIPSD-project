@@ -1,8 +1,8 @@
 # HW2 · Tool contract · `ask_interviews` · Goga-ml
 
 **Tool:** `ask_interviews` · **Owner:** Goga-ml (Goga Jintcharadze) · **Team repo:** https://github.com/Goga-ml/AIPSD-project
-**Code:** contract class `AskInterviews` in [`src/contracts.py`](../../src/contracts.py) line 71 · function `ask_interviews` in [`src/tools.py`](../../src/tools.py) line 174 · registry entry in `src/tools.py` line 214 · MCP registration in [`src/mcp_server.py`](../../src/mcp_server.py) line 78 · the capstone function `answer_question` in [`src/ask.py`](../../src/ask.py) line 71
-**Product pull request:** [#29](https://github.com/Goga-ml/AIPSD-project/pull/29), head commit `aaa8857` (line numbers are from that commit). The full contract section is in [`docs/tool-contracts.md`](../../docs/tool-contracts.md).
+**Code on `main`:** contract class `AskInterviews` in [`src/contracts.py`](../../src/contracts.py) line 71 · function `ask_interviews` in [`src/tools.py`](../../src/tools.py) line 174 · registry entry in `src/tools.py` line 214 · MCP registration in [`src/mcp_server.py`](../../src/mcp_server.py) line 78 · the capstone function `answer_question` in [`src/ask.py`](../../src/ask.py) line 71
+**Product pull request:** [#29](https://github.com/Goga-ml/AIPSD-project/pull/29) · merged commit `00c4457`. The full contract section is in [`docs/tool-contracts.md`](../../docs/tool-contracts.md).
 
 **In one sentence, for the model:** Answer a question about what customers said in the founder's interviews, citing transcript lines like [interview_01:L11]. Says exactly "no evidence found" when the transcripts do not answer it. Reads only, changes nothing.
 
