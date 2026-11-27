@@ -18,7 +18,8 @@ from pydantic import BaseModel
 from shared.transcript import parse_transcript
 
 from . import ask, coach, verify
-from .contracts import AskInterviews, CheckRewrite, Contract, GetTranscript, TalkRatio, VerifyQuote
+from .contracts import (AskInterviews, CheckRewrite, Contract, GetTranscript, RememberFocus, TalkRatio,
+                        VerifyQuote)
 
 ROOT = Path(__file__).resolve().parents[1]
 META_KEYS = ("segment", "date", "role")          # INTERFACES.md section 3: the only header keys
@@ -220,6 +221,22 @@ def verify_quote(args: VerifyQuote, caller: str) -> QuoteCheck:
                       best_line=m.line, match_score=m.score, reason=None if ok else "quote_not_found")
 
 
+# ---------------------------------------------------------------- remember_focus (Lab 6 · team)
+
+class FocusStored(BaseModel):
+    segment: str
+    lifetime: str
+    delete_with: str
+
+
+def remember_focus(args: RememberFocus, caller: str) -> FocusStored:
+    """Adds one row for this founder (src/memory.py). Written only when the founder asks: the model is told
+    so in the description, and the reply names how to delete it."""
+    from . import memory                       # imported here: memory imports caller_key from this module
+    stored = memory.remember_focus(caller, args.segment)
+    return FocusStored(segment=stored, lifetime="30 days", delete_with="DELETE /me/memory")
+
+
 # ---------------------------------------------------------------- the registry
 
 @dataclass(frozen=True)
@@ -228,6 +245,7 @@ class Tool:
     args: type[Contract]
     run: Callable[..., BaseModel]
     needs_caller: bool = True     # call_tool passes the caller from the session; the model cannot
+    writes: bool = False          # True: stores or changes something (MCP: read_only_hint=False)
 
     def schema(self) -> dict:
         """What the model sees: name, description and JSON Schema, all from the contract."""
@@ -242,6 +260,7 @@ TOOLS = {t.name: t for t in [
     Tool("check_rewrite", CheckRewrite, check_rewrite, needs_caller=False),
     Tool("ask_interviews", AskInterviews, ask_interviews),
     Tool("verify_quote", VerifyQuote, verify_quote),
+    Tool("remember_focus", RememberFocus, remember_focus, writes=True),
 ]}
 
 

@@ -28,12 +28,13 @@ from mcp.types import ToolAnnotations
 from . import tools
 from .contracts import (AskInterviews, CheckRewrite, GetTranscript, HypothesisText, InterviewId, InterviewIds,
                         MaxTurns, Question, Quote, RewriteText, Speaker, TalkRatio, TopK, Verdict,
-                        VerifyQuote)
+                        RememberFocus, Segment, VerifyQuote)
 
 mcp = MCPServer("groundwork", instructions="Customer-interview evidence for founders. Tools read "
                                            "transcripts by interview id and give physical line numbers "
                                            "for citations like [interview_01:L11].")
 READS = ToolAnnotations(read_only_hint=True, destructive_hint=False, open_world_hint=False)
+ADDS = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=True, open_world_hint=False)
 
 
 def signed_in_founder() -> str:
@@ -84,6 +85,11 @@ def ask_interviews(question: Question, founder: Founder, interviews: InterviewId
 @mcp.tool(annotations=READS, description=describe("verify_quote"))
 def verify_quote(interview_id: InterviewId, quote: Quote, founder: Founder) -> tools.QuoteCheck:
     return _run(tools.verify_quote, VerifyQuote(interview_id=interview_id, quote=quote), founder)
+
+
+@mcp.tool(annotations=ADDS, description=describe("remember_focus"))
+def remember_focus(segment: Segment, founder: Founder) -> tools.FocusStored:
+    return _run(tools.remember_focus, RememberFocus(segment=segment), founder)
 
 
 if __name__ == "__main__":

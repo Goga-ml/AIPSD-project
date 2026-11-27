@@ -7,6 +7,7 @@ Real answers need the real model.
 """
 import hashlib
 import re
+from types import SimpleNamespace as NS
 
 import numpy as np
 
@@ -32,3 +33,15 @@ def embed(texts: list[str], task_type: str = "") -> list[np.ndarray]:
 def generate(prompt: str) -> str:
     first = re.search(r"^(\[interview_\d+:L\d+\]) (?:Customer|Interviewer): (.+)$", prompt, re.MULTILINE)
     return f"{first.group(2)} {first.group(1)}" if first else "no evidence found"
+
+
+def stream_chunks(messages: list[dict]):
+    """A streamed answer without a model: the last user message echoed back in word-sized pieces,
+    then a usage chunk, in the shape the OpenAI SDK yields. No tool calls."""
+    question = next((m["content"] for m in reversed(messages) if m.get("role") == "user"), "")
+    words = f"Offline answer to: {question}".split(" ")
+    for i, word in enumerate(words):
+        piece = word if i == 0 else " " + word
+        yield NS(usage=None, choices=[NS(delta=NS(content=piece, tool_calls=None))])
+    yield NS(usage=NS(prompt_tokens=sum(len(m.get("content") or "") for m in messages) // 4,
+                      completion_tokens=len(words)), choices=[])

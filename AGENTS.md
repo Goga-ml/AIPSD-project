@@ -13,6 +13,7 @@ run:      uvicorn src.app:app --reload        (caller: X-Founder header, a stand
 - The router writes one line per attempt to logs/router.jsonl; chain, limit, cache lifetime and the sorry sentence: docs/fallback-plan.md
 - Transcripts are parsed only by shared/transcript.py; it changes only by PR
 - Tools: contract in src/contracts.py, gates in src/act.py, one line per call in logs/tools.jsonl
+- State: only src/memory.py stores anything across turns; every row is in docs/state-contract.md
 - New feature = a test in tests/; new tool = a contract in docs/tool-contracts.md first
 - Tests in tests/ never call a real model and need no key
 
@@ -28,3 +29,5 @@ run:      uvicorn src.app:app --reload        (caller: X-Founder header, a stand
 - Delete, skip, or weaken a test to make it pass
 - Put a user, student or account id in a tool's arguments
 - Add a tool that deletes or sends without asking first
+- Store a raw founder or session id, a recording, or anything the founder did not state (docs/state-contract.md)
+- Add a memory write the founder did not ask for
