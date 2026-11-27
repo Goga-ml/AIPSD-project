@@ -97,3 +97,17 @@ class RememberFocus(Contract):
     """Remember which customer segment the founder is focusing on, for 30 days. Call it only when the
     founder asks you to remember it. Tell them what was stored and that DELETE /me/memory removes it."""
     segment: Segment
+
+
+# ---------------------------------------------------------------- save_evidence (Lab 7 · team, needs a yes)
+
+EvidenceKind = Annotated[Literal["pain", "workaround", "spending", "commitment"],
+                         Field(description="What kind of evidence the quote is")]
+
+
+class SaveEvidence(Contract):
+    """Propose saving one customer quote to the founder's evidence board. The quote must be copied from a
+    Customer turn and is checked again before it is saved. Proposing is not saving: the founder confirms."""
+    interview_id: InterviewId
+    quote: Quote
+    kind: EvidenceKind

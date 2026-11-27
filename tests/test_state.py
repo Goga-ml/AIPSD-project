@@ -53,7 +53,7 @@ def test_deletion_is_total_and_immediate():
     memory.add_turn("sess-a", "assistant", "a")
     memory.remember_focus("founder-b", "independent bakery owners")             # someone else's row stays
     gone = memory.forget("founder-a", session="sess-a")
-    assert gone == {"focus": 1, "turns": 2}
+    assert gone == {"focus": 1, "evidence": 0, "turns": 2}
     assert memory.focus("founder-a") is None and memory.recent_turns("sess-a") == []
     keys = {row[0] for row in memory.rows_for_tests()}
     assert keys == {f"founder:{caller_key('founder-b')}"}                       # rows really gone, not flagged
@@ -216,6 +216,6 @@ def test_forget_me_returns_counts_empties_the_next_read_and_needs_no_model(monke
     client = TestClient(app)
     headers = {"X-Founder": "founder-a", "X-Session-Id": "sess-a"}
     assert client.get("/me/memory", headers=headers).json()["focus"] == "independent cafe owners"
-    assert client.delete("/me/memory", headers=headers).json() == {"focus": 1, "turns": 1}
+    assert client.delete("/me/memory", headers=headers).json() == {"focus": 1, "evidence": 0, "turns": 1}
     after = client.get("/me/memory", headers=headers).json()
     assert after["focus"] is None and after["recent_turns"] == 0
